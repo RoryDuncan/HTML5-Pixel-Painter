@@ -60,7 +60,27 @@ textarea {
    Author's custom styles
    ========================================================================== */
 
+h1 {
+    color: #fff;
+    text-align: center;
+    font-weight: 200;
+}
+body {
+    background-color: #363636;
+    padding-top: 50px;
+    padding-bottom: 25px;
+}
 
+.container {
+    padding:5px 5px 5px 5px;
+    margin: 0 auto;
+    width: 502px; /* account for borders */
+    height: 600px;
+}
+canvas {
+    background-color: #000;
+    border: 1px solid #444;
+}
 
 
 
