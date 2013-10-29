@@ -1,8 +1,16 @@
 var CanvasPixelEditor = function(appendToEl, options) {
+/* CONSTANTS */
+  var defaultPixelSize = 10;
+/* PRIVATE */
 
-  /* PRIVATE */
+  var CanvasEditor = function(canvas, pixelSize) {
 
-  var CanvasEditor = function() {};
+    console.log("subclass:", this);
+
+    this.penSize = pixelSize;
+    this.context = canvas.getContext('2d');
+
+  };
 
   var getCanvasById = function(Id) {
     if (Id === undefined || Id === void 0 || Id === null) {
@@ -15,7 +23,7 @@ var CanvasPixelEditor = function(appendToEl, options) {
   };
 
 
-  /* PUBLIC */
+/* PUBLIC */
   this.canvas = null;
   this.get = function() {
     return this.canvas;
@@ -73,8 +81,17 @@ var CanvasPixelEditor = function(appendToEl, options) {
 
     return this;
    };
-  this.start = function() {
-    this._core_ = new CanvasEditor();
+  this.start = function(width, height, pixelSize) {
+    var canvas = document.getElementById( this.getId() );
+    if (!canvas) {throw new Error("Canvas was not found."); return;}
+    var pixelSize = !pixelSize ? pixelSize = defaultPixelSize : pixelSize;
+    this.setSize({
+      width: width*pixelSize,
+      height: height*pixelSize
+    });
+
+    this._core_ = new CanvasEditor(canvas, pixelSize);
+  
 
     return this;
    };
@@ -83,7 +100,7 @@ var CanvasPixelEditor = function(appendToEl, options) {
   this.clear = function() {};
 
 
-  // allow injection of canvas with instantiation.
+// allow  canvas to be appended with instantiation.
   if (appendToEl !== undefined) {
     if (options !== undefined) {
       this.addCanvasToDOM(appendToEl, options);
@@ -94,6 +111,6 @@ var CanvasPixelEditor = function(appendToEl, options) {
 };
 
 
-window.CanvasPixelEditor = new CanvasPixelEditor('div.container', {id:"pixel-maker", width: 500, height: 500});
-
+window.CanvasPixelEditor = new CanvasPixelEditor('div.container', {id:"pixel-maker"});
+CanvasPixelEditor.start(25, 25, 10);
 console.log(CanvasPixelEditor);
