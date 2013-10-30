@@ -61,6 +61,7 @@ textarea {
    ========================================================================== */
 
 h1 {
+    font-size: 13pt;
     color: #fff;
     text-align: center;
     font-weight: 200;
@@ -73,12 +74,12 @@ body {
 
 .container {
     padding:5px 5px 5px 5px;
-    margin: 0 auto;
-    width: 502px; /* account for borders */
-    height: 600px;
+    text-align: center;
+    width:  100%; /* account for borders */
 }
 canvas {
-    background-color: #000;
+    
+    background-color: #fff;
     border: 1px solid #444;
 }
 
