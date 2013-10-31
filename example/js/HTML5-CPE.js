@@ -16,7 +16,7 @@ var CanvasPixelEditor = function(options) {
       this.context.fillRect(0,0, this.canvas.width, this.canvas.height);
       return this;
     };
-    this.currentColor = "#088";
+    this.currentColor = "#448fab";
     this.dimensions = {
       height: this.canvas.height/pixelSize,
       width: this.canvas.width/pixelSize
@@ -36,10 +36,7 @@ var CanvasPixelEditor = function(options) {
           xEnd = xStart + this.pixel,
           yEnd = yStart + this.pixel;
         return {x: xStart, y: yStart};
-
      };
-
-
   };
 
   var getCanvasById = function(Id) {
@@ -124,8 +121,10 @@ var CanvasPixelEditor = function(options) {
   this.addCanvasToDOM = function(parentEl, options) {
     // the parent element that will be
     var parent = document.querySelectorAll(parentEl),
-        canv = document.createElement("canvas");
-        
+        canv = document.createElement("canvas")
+        toolDiv = document.createElement("div");
+
+    this.parent = parent;
 
     if (parent.length === 0) { throw new Error("Specified Parent Element Not found in DOM.");}
 
@@ -137,16 +136,32 @@ var CanvasPixelEditor = function(options) {
         id: "canvas_" + (document.getElementsByTagName('canvas').length + 1)
       };
     }
-    
+
+    // add the canvas
     canv.setAttribute("id", options.id);
     canv.setAttribute("width", options.width);
     canv.setAttribute("height", options.height);
     parent.item(options.index).appendChild(canv);
+    
     this.canvas = document.getElementById(options.id);
+
+    //add the "tools" div, to put things like the colorpicker
+    toolDiv.setAttribute("class", "toolbox");
+    this.parent.item(0).appendChild(toolDiv);
+    
+    colorpicker = document.createElement("input");
+    colorpicker.setAttribute("id", "colorpickerholder");
+    
+    toolDiv.appendChild(colorpicker);
+
+    this.colorPicker =  "#colorpickerholder";
+    $(this.colorPicker).val("#448fab");
+
 
     return this;
    };
   this.start = function(width, height, pixelSize) {
+
     var canvas = document.getElementById( this.getId() );
     if (!canvas) {throw new Error("Canvas was not found."); return;}
     // fix from stack overflow for firefox for mouse captures
@@ -158,8 +173,30 @@ var CanvasPixelEditor = function(options) {
     });
     // edit to make usage a different experience. 
     this.edit = new CanvasEditor(canvas, pixelSize);
+    this.edit._app = this;
     this._addEvents();
-  
+
+    //add colorpicker
+
+    //$(this.colorPicker).ColorPicker({eventName :'click', flat:false, livePreview: true});
+    var that = this;
+    $(this.colorPicker).ColorPicker({
+        onSubmit: function(hsb, hex, rgb, el, parent) {
+            var newColor = "#" +hex;
+            $(el).val(hex);
+            $(el).css({"color": newColor})
+            $(el).ColorPickerHide();
+            that.edit.currentColor = newColor;
+        },
+        onBeforeShow: function () {
+            $(this).ColorPickerSetColor(this.value);
+        }
+    })
+    .on('keyup', function(){
+        $(this).ColorPickerSetColor(this.value);
+    });
+
+
 
     return this;
    };

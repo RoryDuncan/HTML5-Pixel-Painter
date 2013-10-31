@@ -74,15 +74,25 @@ body {
 
 .container {
     padding:5px 5px 5px 5px;
-    text-align: center;
-    width:  100%; /* account for borders */
+    margin: 0 auto;
+    width:  66.6%; /* account for borders */
 }
 canvas {
-    
+    float:left;
     background-color: #fff;
     border: 1px solid #444;
 }
 
+#colorpickerholder {
+    background-color: #fff;
+    font-weight: 900;
+}
+
+.toolbox {
+    float:right;
+    padding: 5px 5px 5px;
+    background-color: #088;
+}
 
 
 

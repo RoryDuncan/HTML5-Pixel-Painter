@@ -1,6 +1,6 @@
 
 
 
-CanvasPixelEditor = new CanvasPixelEditor({parent: 'div.container', id:"pixel-maker"});
+CanvasPixelEditor = new CanvasPixelEditor({parent: 'div.container', id:"wow"});
 
-CanvasPixelEditor.start(10, 10, 40);
+CanvasPixelEditor.start(12, 10, 40);
