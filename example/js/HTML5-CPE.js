@@ -16,7 +16,7 @@ var CanvasPixelEditor = function(options) {
       this.context.fillRect(0,0, this.canvas.width, this.canvas.height);
       return this;
     };
-    this.currentColor = "#448fab";
+    this.currentColor = "#f00";
     this.dimensions = {
       height: this.canvas.height/pixelSize,
       width: this.canvas.width/pixelSize
@@ -149,14 +149,20 @@ var CanvasPixelEditor = function(options) {
     toolDiv.setAttribute("id", "toolbox");
     this.parent.item(0).appendChild(toolDiv);
     this.toolboxId = "#toolbox";
+    
 
+    var dimensions = document.createElement("div");
     var colorChange = document.createElement("div");
     var colorPicker = document.createElement("div");
+    dimensions.setAttribute("id", "dimensions");
     colorChange.setAttribute("id", "colorselector");
     colorPicker.setAttribute("id", "colorpickerholder");
-    
-    toolDiv.appendChild(colorChange);
 
+    $(this.toolboxId).html("<h2> Tools </h2>");
+    $(this.toolboxId).append("<h3>Dimensions </h3>");
+    toolDiv.appendChild(dimensions);
+    $(this.toolboxId).append("<h3> Color </h3>");
+    toolDiv.appendChild(colorChange);
     toolDiv.appendChild(colorPicker);
 
     this.colorPicker =  "#colorpickerholder";
@@ -165,15 +171,20 @@ var CanvasPixelEditor = function(options) {
     return this;
    };
   this.toolbox = function() {
+    //toolbox is the div in which interface icons can be used.
+
+    //adjust to position absolute exactly next to canvas.
     var canvas = "#"+this.getId(),
         pos = $(canvas).offset(),
         width = this.canvas.width;
 
     $(this.toolboxId).css({
       "position":"absolute",
-      "left": pos.left + width+10,
+      "left": pos.left + width + 10,
       "top": pos.top
     });
+    // add in the dynamic content (dimensions of the image)
+    $('#dimensions').html(  + this.edit.dimensions.width + "<span>&#10005;</span>" + this.edit.dimensions.height + "::" + this.edit.pixel);
 
    };
   this.color = function(hex){
@@ -182,7 +193,7 @@ var CanvasPixelEditor = function(options) {
   this.start = function(width, height, pixelSize) {
 
     var canvas = document.getElementById(this.getId() );
-    if (!canvas) {throw new Error("Canvas was not found."); return;}
+    if (!canvas) { throw new Error("Canvas was not found."); return; }
     // fix from stack overflow for firefox for mouse captures
     canvas.style.position = "relative";
     var pixelSize = !pixelSize ? pixelSize = defaultPixelSize : pixelSize;
@@ -202,7 +213,7 @@ var CanvasPixelEditor = function(options) {
     var that = this;
      $(this.colorPicker).ColorPicker({
         flat: true,
-        color: '#ff0000',
+        color: '#000',
         onSubmit: function(hsb, hex, rgb) {
             $('#colorselector').css('backgroundColor', '#' + hex);
             that.color('#' + hex);

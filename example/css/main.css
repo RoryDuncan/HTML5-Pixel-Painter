@@ -61,9 +61,8 @@ textarea {
    ========================================================================== */
 
 h1 {
-    font-size: 13pt;
-    color: #fff;
-    text-align: center;
+    font-size: 12px;
+    color: #ddd;
     font-weight: 200;
 }
 body {
@@ -79,30 +78,74 @@ body {
 }
 canvas {
     
-    background-color: #fff;
-    border: 1px solid #444;
+    background: url('../images/trans.png');
+    border: 1px solid #555;
 }
 
-#colorpickerholder {
 
+#colorpickerholder {
     position: absolute;
 }
 
 #toolbox {
-
-    width: 75px;
-    padding: 10px 5px;
+    color: #999;
+    padding: 5px 10px 10px 10px;
     border-radius: 3px;
-    background-color: #000;
+    background-color: #363636;
+    border: 1px solid #555;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+    
+}
+#toolbox:hover {
+    cursor: default;
+    border: 1px solid #666;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.35);
+}
+#dimensions {
+    text-transform: center;
+    font-size: 10px;
+    font-weight:bold;
+}
+#dimensions > span {
+    color: #666;
+    
+
+}
+#toolbox h2, #toolbox h3 {
+    text-align: center;
+    font-size:10px;
+    text-transform: uppercase;
+    padding: 0px 0px 0px 0px;
+    margin: 0px 0px 0px 0px;
+    width:100%;
+    
+}
+#toolbox h2 {
+    font-weight: 400;
+    color: #ddd;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+    border-bottom: 1px dashed #444;
+}
+#toolbox h3 {
+    color: #cbb;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-size:8px;
+
 }
 #colorselector {
-    margin: 0 0;
-    padding: 0 0;
-    border-radius: 5px;
-    width: 35px;
-    height: 35px;
-    background: url('../images/select2.png');
+    margin: 0 auto;
+    padding: 0 0 0 0;
+    border-radius: 3px;
+    width: 30px;
+    height: 30px;
+    background:48% 48% url('../images/select2.png') no-repeat;
+    background-color: #f00;
+    border: 1px solid #363636;
 }
+#colorselector:hover {cursor: pointer;}
+
 
 
 
