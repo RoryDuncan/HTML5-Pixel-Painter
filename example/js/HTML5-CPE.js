@@ -27,7 +27,7 @@ var CanvasPixelEditor = function(options) {
 
       this.context.fillRect(pixel.x, pixel.y, this.pixel, this.pixel );
 
-    }
+    };
     this.pixelAt = function(_x, _y) {
       var x = ~~(_x / this.pixel),
           y = ~~(_y / this.pixel),
@@ -121,7 +121,7 @@ var CanvasPixelEditor = function(options) {
   this.addCanvasToDOM = function(parentEl, options) {
     // the parent element that will be
     var parent = document.querySelectorAll(parentEl),
-        canv = document.createElement("canvas")
+        canv = document.createElement("canvas"),
         toolDiv = document.createElement("div");
 
     this.parent = parent;
@@ -146,23 +146,42 @@ var CanvasPixelEditor = function(options) {
     this.canvas = document.getElementById(options.id);
 
     //add the "tools" div, to put things like the colorpicker
-    toolDiv.setAttribute("class", "toolbox");
+    toolDiv.setAttribute("id", "toolbox");
     this.parent.item(0).appendChild(toolDiv);
+    this.toolboxId = "#toolbox";
+
+    var colorChange = document.createElement("div");
+    var colorPicker = document.createElement("div");
+    colorChange.setAttribute("id", "colorselector");
+    colorPicker.setAttribute("id", "colorpickerholder");
     
-    colorpicker = document.createElement("input");
-    colorpicker.setAttribute("id", "colorpickerholder");
-    
-    toolDiv.appendChild(colorpicker);
+    toolDiv.appendChild(colorChange);
+
+    toolDiv.appendChild(colorPicker);
 
     this.colorPicker =  "#colorpickerholder";
-    $(this.colorPicker).val("#448fab");
-
+    
 
     return this;
    };
+  this.toolbox = function() {
+    var canvas = "#"+this.getId(),
+        pos = $(canvas).offset(),
+        width = this.canvas.width;
+
+    $(this.toolboxId).css({
+      "position":"absolute",
+      "left": pos.left + width+10,
+      "top": pos.top
+    });
+
+   };
+  this.color = function(hex){
+    this.edit.currentColor = hex;
+   }
   this.start = function(width, height, pixelSize) {
 
-    var canvas = document.getElementById( this.getId() );
+    var canvas = document.getElementById(this.getId() );
     if (!canvas) {throw new Error("Canvas was not found."); return;}
     // fix from stack overflow for firefox for mouse captures
     canvas.style.position = "relative";
@@ -174,30 +193,26 @@ var CanvasPixelEditor = function(options) {
     // edit to make usage a different experience. 
     this.edit = new CanvasEditor(canvas, pixelSize);
     this.edit._app = this;
+    
     this._addEvents();
 
     //add colorpicker
 
     //$(this.colorPicker).ColorPicker({eventName :'click', flat:false, livePreview: true});
     var that = this;
-    $(this.colorPicker).ColorPicker({
-        onSubmit: function(hsb, hex, rgb, el, parent) {
-            var newColor = "#" +hex;
-            $(el).val(hex);
-            $(el).css({"color": newColor})
-            $(el).ColorPickerHide();
-            that.edit.currentColor = newColor;
-        },
-        onBeforeShow: function () {
-            $(this).ColorPickerSetColor(this.value);
+     $(this.colorPicker).ColorPicker({
+        flat: true,
+        color: '#ff0000',
+        onSubmit: function(hsb, hex, rgb) {
+            $('#colorselector').css('backgroundColor', '#' + hex);
+            that.color('#' + hex);
+            $('#colorpickerholder').hide();
         }
-    })
-    .on('keyup', function(){
-        $(this).ColorPickerSetColor(this.value);
     });
+     $(this.colorPicker).hide();
 
-
-
+    // fix toolbox positioning
+    this.toolbox(); 
     return this;
    };
   this._addEvents = function() {
@@ -208,6 +223,21 @@ var CanvasPixelEditor = function(options) {
       var mouse = getMouse(e, that.canvas);
       that.edit.paint(mouse.x, mouse.y)
     });
+    $('#colorselector').click(function(){
+
+      $('div.colorpicker_submit').click(function(){
+        $('#colorpickerholder').hide();
+      });
+
+      var display = $('#colorpickerholder').css("display");
+      if (display === "none") {
+        $('#colorpickerholder').show();
+      }
+      else if (display === "block") {
+        $('#colorpickerholder').hide();
+      }
+    });
+
    };
   this._removeEvents = function() {
     this.canvas.removeEventListener("click");

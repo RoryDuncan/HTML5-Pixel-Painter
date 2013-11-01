@@ -1,6 +1,6 @@
 
 
 
-CanvasPixelEditor = new CanvasPixelEditor({parent: 'div.container', id:"wow"});
+var CPE = new CanvasPixelEditor({parent: 'div.container', id:"wow"});
 
-CanvasPixelEditor.start(12, 10, 40);
+CPE.start(12, 10, 40);

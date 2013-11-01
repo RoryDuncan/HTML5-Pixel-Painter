@@ -78,29 +78,31 @@ body {
     width:  66.6%; /* account for borders */
 }
 canvas {
-    float:left;
+    
     background-color: #fff;
     border: 1px solid #444;
 }
 
 #colorpickerholder {
-    background-color: #fff;
-    font-weight: 900;
+
+    position: absolute;
 }
 
-.toolbox {
-    float:right;
-    padding: 5px 5px 5px;
-    background-color: #088;
+#toolbox {
+
+    width: 75px;
+    padding: 10px 5px;
+    border-radius: 3px;
+    background-color: #000;
 }
-
-
-
-
-
-
-
-
+#colorselector {
+    margin: 0 0;
+    padding: 0 0;
+    border-radius: 5px;
+    width: 35px;
+    height: 35px;
+    background: url('../images/select2.png');
+}
 
 
 
