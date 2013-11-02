@@ -187,6 +187,7 @@ var CanvasPixelEditor = function(options) {
     $('#dimensions').html(  + this.edit.dimensions.width + "<span>&#10005;</span>" + this.edit.dimensions.height + "::" + this.edit.pixel);
 
    };
+
   this.color = function(hex){
     this.edit.currentColor = hex;
    }
