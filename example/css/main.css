@@ -76,8 +76,14 @@ body {
     margin: 0 auto;
     width:  66.6%; /* account for borders */
 }
+
+/*
+    RELEVANT TO HTML5-Pixel-Painter 
+    Todo: add to own css file
+*/
+
 canvas {
-    
+    cursor: crosshair;
     background: url('../images/trans.png');
     border: 1px solid #555;
 }
@@ -88,6 +94,8 @@ canvas {
 }
 
 #toolbox {
+    font-family: "Arial", "Lucida Console", "Segoe UI", "sans-serif";
+    font-size: 10px;
     color: #999;
     padding: 5px 10px 10px 10px;
     border-radius: 3px;
@@ -98,22 +106,17 @@ canvas {
 }
 #toolbox:hover {
     cursor: default;
-    border: 1px solid #666;
-    box-shadow: 2px 2px 8px rgba(0,0,0,0.35);
+
 }
-#dimensions {
-    text-transform: center;
-    font-size: 10px;
+#dimensions {    
     font-weight:bold;
 }
 #dimensions > span {
     color: #666;
-    
-
 }
 #toolbox h2, #toolbox h3 {
+    font-size: 1em;
     text-align: center;
-    font-size:10px;
     text-transform: uppercase;
     padding: 0px 0px 0px 0px;
     margin: 0px 0px 0px 0px;
@@ -121,8 +124,9 @@ canvas {
     
 }
 #toolbox h2 {
+    font-size: 10px;
     font-weight: 400;
-    color: #ddd;
+    color: #ccc;
     padding-bottom: 5px;
     margin-bottom: 5px;
     border-bottom: 1px dashed #444;
@@ -136,15 +140,33 @@ canvas {
 }
 #colorselector {
     margin: 0 auto;
-    padding: 0 0 0 0;
+    padding: 0px 0px 0px 0px;
     border-radius: 3px;
     width: 30px;
     height: 30px;
     background:48% 48% url('../images/select2.png') no-repeat;
     background-color: #f00;
     border: 1px solid #363636;
+
 }
-#colorselector:hover {cursor: pointer;}
+#colorselector:hover, #eyedropper:hover {cursor: pointer;}
+
+.tool {
+    border: 1px solid #000;
+    text-align: center;
+    font-weight: 600;
+    text-transform: lowercase;
+    background-color: #222;
+    padding:3px 3px;
+    border-radius: 2px;
+}
+.active {
+    color: #fff;
+    background-color: #566;
+
+}
+
+
 
 
 
