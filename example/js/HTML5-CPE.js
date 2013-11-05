@@ -1,7 +1,9 @@
 var CanvasPixelEditor = function(options) {
 
 /* PRIVATE */
-
+  // CanvasEditor is a sub-class of CanvasPixelEditor
+  // it is instantiated at CanvasPixelEditor.start()
+  // and attached to CanvasPixelEditor.edit
   var CanvasEditor = function(canvas, pixelSize) {
 
     this.canvas = canvas;
@@ -176,6 +178,7 @@ var CanvasPixelEditor = function(options) {
     var dimensions = document.createElement("div");
     var colorChange = document.createElement("div");
     var colorPicker = document.createElement("div");
+    var opacitySlider = document.createElement("input");
     var eyedropper = document.createElement("div");
     dimensions.setAttribute("id", "dimensions");
     colorChange.setAttribute("id", "colorselector");
@@ -184,12 +187,13 @@ var CanvasPixelEditor = function(options) {
     eyedropper.setAttribute("class", "tool");
 
     
-    $(this.toolboxId).append("<h3>Dimensions </h3>");
+    $(this.toolboxId).append("<h1>Dimensions </h1>");
     toolDiv.appendChild(dimensions);
-    $(this.toolboxId).append("<h3> Color </h3>");
+    $(this.toolboxId).append("<h1> Color </h1>");
     toolDiv.appendChild(colorChange);
     toolDiv.appendChild(colorPicker);
-    $(this.toolboxId).append("<h3> Tools </h3>");
+    $(this.toolboxId).append("<p> Opacity </p>");
+    $(this.toolboxId).append("<h1> Tools </h1>");
     toolDiv.appendChild(eyedropper);
 
     $('#eyedropper').text("eyedrop")
