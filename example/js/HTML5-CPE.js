@@ -1,11 +1,12 @@
 var CanvasPixelEditor = function(options) {
 
-/* PRIVATE */
-  // CanvasEditor is a sub-class of CanvasPixelEditor
-  // it is instantiated at CanvasPixelEditor.start()
-  // and attached to CanvasPixelEditor.edit
-  var CanvasEditor = function(canvas, pixelSize) {
+/* PRIVATE API */
+  /* CLASSES */
 
+  // CanvasEditor is a sub-class of CanvasPixelEditor
+  // it is instantiated at CanvasPixelEditor.start() and attached to CanvasPixelEditor.edit
+  var CanvasEditor = function(parentApp, canvas, pixelSize) {
+    this.app = parentApp;
     this.canvas = canvas;
     this.pixel = pixelSize;
     this.context = canvas.getContext('2d');
@@ -61,7 +62,38 @@ var CanvasPixelEditor = function(options) {
           yEnd = yStart + this.pixel;
         return {x: xStart, y: yStart};
      };
+   };
+  // CanvasToData handles saving as image or data, etc
+  var CanvasToData = function(parentApp) {
+    this.app = parentApp;
+
+    this.array = function() {
+      var actualWidth = this.app.canvas.width,
+          actualHeight = this.app.canvas.height,
+          dimensions = this.app.edit.dimensions,
+          pixels = dimensions.width * dimensions.height,
+          data = [];
+
+      // SPecific Iterator (_i) so that there is no extra/shortage,
+      // but keeps tracks of rows and columns seperately
+      for ( var _i = 1, row = 0, column = 0, _ii = pixels;  _i < _ii;  _i++, column++) {
+        var x, y;
+        if (column % dimensions.width === 0) {
+          row++;
+          column = 0;
+        }
+        // get the specified color at the current positions
+        data[_i] = this.app.edit.getColorAt(column * dimensions.width, row * dimensions.height);
+      }
+      
+      return {"data":data, "dimensions":dimensions};
+     };
+    this.image = function() {};
+    this.data = function() {};
+
   };
+
+  /* HELPERS */
 
   var getCanvasById = function(Id) {
     if (Id === undefined || Id === void 0 || Id === null) {
@@ -71,12 +103,11 @@ var CanvasPixelEditor = function(options) {
       return undefined;
     }
     else return document.getElementById(Id);
-  };
-
-/* Page variables and mouse function from http://stackoverflow.com/questions/1114465/getting-mouse-location-in-canvas*/
+   };
 
   var getMouse = function(e, canvas) {
-
+    /* Page variables and mouse function from http://stackoverflow.com/questions/1114465/getting-mouse-location-in-canvas*/
+    // unsure if "var" intentionally left out.
     stylePaddingLeft = parseInt(document.defaultView.getComputedStyle(canvas, null)['paddingLeft'], 10)      || 0;
     stylePaddingTop  = parseInt(document.defaultView.getComputedStyle(canvas, null)['paddingTop'], 10)       || 0;
     styleBorderLeft  = parseInt(document.defaultView.getComputedStyle(canvas, null)['borderLeftWidth'], 10)  || 0;
@@ -107,9 +138,9 @@ var CanvasPixelEditor = function(options) {
 
     // We return a simple javascript object with x and y defined
     return {x: mx, y: my};
-  };
+   };
 
-/* PUBLIC */
+/* PUBLIC API */
   this.canvas = null;
   this.get = function() {
     return this.canvas;
@@ -174,17 +205,21 @@ var CanvasPixelEditor = function(options) {
     this.parent.item(0).appendChild(toolDiv);
     this.toolboxId = "#toolbox";
     
-
+    // ideally the following would be in a template,
+    // but for the sake of modularity it isn't
     var dimensions = document.createElement("div");
     var colorChange = document.createElement("div");
     var colorPicker = document.createElement("div");
     var opacitySlider = document.createElement("input");
     var eyedropper = document.createElement("div");
-    dimensions.setAttribute("id", "dimensions");
+    var colorFill = document.createElement("div");
+    dimensions.setAttribute("id", "p_dimensions");
     colorChange.setAttribute("id", "colorselector");
     colorPicker.setAttribute("id", "colorpickerholder");
-    eyedropper.setAttribute("id", "eyedropper");
+    eyedropper.setAttribute("id", "p_eyedropper");
+    colorFill.setAttribute("id", "p_fill");
     eyedropper.setAttribute("class", "tool");
+    colorFill.setAttribute("class", "tool");
 
     
     $(this.toolboxId).append("<h1>Dimensions </h1>");
@@ -196,7 +231,7 @@ var CanvasPixelEditor = function(options) {
     $(this.toolboxId).append("<h1> Tools </h1>");
     toolDiv.appendChild(eyedropper);
 
-    $('#eyedropper').text("eyedrop")
+    $('#p_eyedropper').text("eyedrop")
 
     this.colorPicker =  "#colorpickerholder";
     
@@ -217,7 +252,7 @@ var CanvasPixelEditor = function(options) {
       "top": pos.top
     });
     // add in the dynamic content (dimensions of the image)
-    $('#dimensions').html(  + this.edit.dimensions.width 
+    $('#p_dimensions').html(  + this.edit.dimensions.width 
                             + "<span>&#10005;</span>" 
                             + this.edit.dimensions.height 
                             + " @ " + this.edit.pixel);
@@ -245,8 +280,11 @@ var CanvasPixelEditor = function(options) {
     });
     // edit to make usage a better mental model. 
     // ie Canvas.edit.fill("#ff0")
-    this.edit = new CanvasEditor(canvas, pixelSize);
-    this.edit._app = this;
+    this.edit = new CanvasEditor(this, canvas, pixelSize);
+    // same with 'make'
+    // app.make.image
+    this.make = new CanvasToData(this);
+    console.log( this.make.array() );
 
     // events
     this.painting(true);
@@ -287,9 +325,7 @@ var CanvasPixelEditor = function(options) {
     else {
       $(selector).unbind("click");
     }
-
-  };
-
+   };
   this._events = function() {
     var that = this,
         selector = ("#"+that.getId());
@@ -310,10 +346,12 @@ var CanvasPixelEditor = function(options) {
     });
 
     //eyedropper tool
-    $('#eyedropper').click( function() {
-      if ( $('#eyedropper').hasClass('active') ) {}
-      else {
-        $("#eyedropper").toggleClass('active');
+    $('#p_eyedropper').click( function() {
+      if ( !$('#p_eyedropper').hasClass('tool-active') ) {
+        //interface changes
+        $("#p_eyedropper").toggleClass('tool');
+        $("#p_eyedropper").toggleClass('tool-active');
+        $(selector).toggleClass('stealing-colors');
         that.painting(false);
         
         $(selector).click( function(e) {
@@ -322,12 +360,14 @@ var CanvasPixelEditor = function(options) {
           var color = that.edit.getColorAt(mouse.x, mouse.y);
           //set the color to the one the eyedropper tool picked up.
           that.color(color);
-          $("#eyedropper").toggleClass('active');
+          $("#p_eyedropper").toggleClass('tool');
+          $("#p_eyedropper").toggleClass('tool-active');
           //unbind eyedropper click event and add painting event again
           $(selector).unbind("click");
+          $(selector).toggleClass('stealing-colors');
           that.painting(true);
         });
-      }
+    }
 
       
     });
@@ -341,7 +381,7 @@ var CanvasPixelEditor = function(options) {
   this.reset = function() {};
 
 
-// allows the canvas to be appended to another element upon instantiation.
+// If parameters exist, the canvas is appended to another element upon instantiation.
   if (options !== undefined) {
     this.addToDOM(options.parent, options);
     this.options = options;

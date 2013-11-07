@@ -11,8 +11,6 @@ textarea {
 }
 
 body {
-    background-color: #fff;
-    color: #000;
     font-size: 1em;
     line-height: 1.4;
 }
@@ -65,7 +63,8 @@ textarea {
 
 
 body {
-    background-color: #eee;
+    color: #000;
+    background-color: #f8f8f8;
     padding-top: 50px;
     padding-bottom: 25px;
 }
@@ -86,8 +85,8 @@ body {
     ========================================================================== */
 
 canvas {
-    cursor: crosshair;
-    border: 1px solid #000;
+    cursor: default;
+    border: 1px solid #ccc;
     /*background: url('../images/trans.png') rgba(0,0,0,0.45);*/
     
 }
@@ -109,7 +108,7 @@ canvas {
 }
 
 /*The visual aspect of active tools */
-.active { 
+#toolbox > .tool-active { 
 
 }
 
@@ -164,10 +163,23 @@ canvas {
     border-radius: 2px;
 
 }
+#toolbox > .tool:hover {
+    color:#000;
+    background-color: #f0f0f0;
+    cursor: pointer;
+}
 
 /*The visual aspect of active tools */
-.active { 
-
+#toolbox > .tool-active {
+    padding: 3px 1px 3px 1px;
+    margin:0 10% 0 10%;
+    color: #599;
+    border-radius: 2px; 
+    background-color: #eee;
+    border: 1px solid #5cc;
+}
+.stealing-colors {
+    cursor: crosshair;
 }
 
 #toolbox:hover {
@@ -187,8 +199,7 @@ canvas {
     background:48% 48% url('../images/select2.png') no-repeat #f00;
 }
 
-#colorselector:hover,
-#eyedropper:hover {
+#colorselector:hover {
     cursor: pointer;
 }
 
