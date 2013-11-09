@@ -13,9 +13,9 @@ var CanvasPixelEditor = function(options) {
     this.clear = function() {
       this.context.clearRect(0,0, this.canvas.width, this.canvas.height);
      };
-    this.fill = function(color) {
-      var color = !color ? "#fff" : color; 
-      this.context.fillStyle = color;
+    this.fill = function() {
+      this.context.globalAlpha = this.opacity;
+      this.context.fillStyle = this.currentColor;;
       this.context.fillRect(0,0, this.canvas.width, this.canvas.height);
       return this;
      };
@@ -25,6 +25,7 @@ var CanvasPixelEditor = function(options) {
       width: this.canvas.width/pixelSize
      };
     this.paint = function(x, y) {
+      this.context.globalAlpha = this.opacity;
       var pixel = this.getPixel(x, y);
       this.context.fillStyle = this.currentColor;
 
@@ -73,6 +74,7 @@ var CanvasPixelEditor = function(options) {
           dimensions = this.app.edit.dimensions,
           pixels = dimensions.width * dimensions.height,
           data = [];
+          dimensions.pixel = this.app.edit.pixel;
 
       // SPecific Iterator (_i) so that there is no extra/shortage,
       // but keeps tracks of rows and columns seperately
@@ -86,9 +88,13 @@ var CanvasPixelEditor = function(options) {
         data[_i] = this.app.edit.getColorAt(column * dimensions.width, row * dimensions.height);
       }
       
-      return {"data":data, "dimensions":dimensions};
+      return {"data": data, "dimensions":dimensions};
      };
-    this.image = function() {};
+    this.image = function() {
+          var dataURL = this.app.canvas.toDataURL();
+          return dataURL;
+
+    };
     this.data = function() {};
 
   };
@@ -174,15 +180,15 @@ var CanvasPixelEditor = function(options) {
 
    };
   this.addToDOM = function(parentEl, options) {
-    // the parent element that will be
+    // the parent element that the canvas will be attached to
     var parent = document.querySelectorAll(parentEl),
         canv = document.createElement("canvas"),
         toolDiv = document.createElement("div");
 
     this.parent = parent;
 
-    if (parent.length === 0) { throw new Error("Specified Parent Element Not found in DOM.");}
-
+    if (parent.length === 0) throw new Error("Specified Parent Element Not found in DOM.");
+    // 'defaults'
     if (typeof options !== "object") {
       var options = {
         index: 0,
@@ -193,6 +199,7 @@ var CanvasPixelEditor = function(options) {
     }
 
     // add the canvas
+    //TODO adjust all of these to jQuery, since jQuery was added halfway through.
     canv.setAttribute("id", options.id);
     canv.setAttribute("width", options.width);
     canv.setAttribute("height", options.height);
@@ -207,35 +214,38 @@ var CanvasPixelEditor = function(options) {
     
     // ideally the following would be in a template,
     // but for the sake of modularity it isn't
-    var dimensions = document.createElement("div");
-    var colorChange = document.createElement("div");
-    var colorPicker = document.createElement("div");
-    var opacitySlider = document.createElement("input");
-    var eyedropper = document.createElement("div");
-    var colorFill = document.createElement("div");
-    dimensions.setAttribute("id", "p_dimensions");
-    colorChange.setAttribute("id", "colorselector");
-    colorPicker.setAttribute("id", "colorpickerholder");
-    eyedropper.setAttribute("id", "p_eyedropper");
-    colorFill.setAttribute("id", "p_fill");
-    eyedropper.setAttribute("class", "tool");
-    colorFill.setAttribute("class", "tool");
+    var Div = document.createElement("div");
+    var colorChangeId = "colorselector";     // jQuery color picker plugin
+    var colorPickerId = "colorpickerholder"; // jQuery color picker plugin
+    var opacitySliderId = "p_opacity-slider";
+    var opacityOutput = "p_opacity-output";
+    var eyedropperId = "p_eyedropper";
+    var colorFill = "p_fill";
+    var dimensionsId = "p_dimensions";
+    var outputButtonId = "p_generate";
 
+
+    // Don't forget that the order appended will affect the visual structure as well!
+    // once again, a template would be ideal here.
+    $(this.toolboxId)
+      .append("<h1>Dimensions </h1>")
+      .append("<div id='" + dimensionsId + "'></div>")
+      .append("<h1> Color </h1>")
+      .append("<div id='" + colorChangeId + "'></div>")
+      .append("<div id='" + colorPickerId + "'></div>")
+      .append("<h1> Opacity</h1>")
+      .append("<input id='" + opacitySliderId + "' type='range' value='100'>")
+      .append("<div  id='" + opacityOutput + "'>100%</div>")
+      .append("<h1> Tools </h1>")
+      .append("<div class='tool' id='" + eyedropperId + "' >Grab Color</div>")
+      .append("<div class='tool' id='" + colorFill + "' >Fill</div>")
+      .append("<h1> Output </h1>")
+      .append("<div id='" + outputButtonId+ "' class='tool'>Create Image</div>")
+      .append("<ol id='p_generated-states'></ol>");
+
+
+    this.colorPicker = "#" + colorPickerId;
     
-    $(this.toolboxId).append("<h1>Dimensions </h1>");
-    toolDiv.appendChild(dimensions);
-    $(this.toolboxId).append("<h1> Color </h1>");
-    toolDiv.appendChild(colorChange);
-    toolDiv.appendChild(colorPicker);
-    $(this.toolboxId).append("<p> Opacity </p>");
-    $(this.toolboxId).append("<h1> Tools </h1>");
-    toolDiv.appendChild(eyedropper);
-
-    $('#p_eyedropper').text("eyedrop")
-
-    this.colorPicker =  "#colorpickerholder";
-    
-
     return this;
    };
   this.toolbox = function() {
@@ -252,7 +262,7 @@ var CanvasPixelEditor = function(options) {
       "top": pos.top
     });
     // add in the dynamic content (dimensions of the image)
-    $('#p_dimensions').html(  + this.edit.dimensions.width 
+    $('#p_dimensions').html(this.edit.dimensions.width 
                             + "<span>&#10005;</span>" 
                             + this.edit.dimensions.height 
                             + " @ " + this.edit.pixel);
@@ -344,6 +354,15 @@ var CanvasPixelEditor = function(options) {
         $('#colorpickerholder').hide();
       }
     });
+    //opacity slider
+    $('#p_opacity-slider').change(function(e){
+      that.edit.opacity = this.value/100;
+      $('#p_opacity-output').text(this.value + "%");
+
+    })
+    $('#p_fill').click(function(e){
+      that.edit.fill();
+    });
 
     //eyedropper tool
     $('#p_eyedropper').click( function() {
@@ -367,10 +386,18 @@ var CanvasPixelEditor = function(options) {
           $(selector).toggleClass('stealing-colors');
           that.painting(true);
         });
-    }
-
-      
+      }
     });
+
+    // Image Output
+    $('#p_generate').click(function(e){
+      that.imagesGenerated = that.imagesGenerated === undefined ? 0 : that.imagesGenerated+1;
+      var state = "<li><a target='_blank' href='" + that.make.image() + "' > State " + that.imagesGenerated +"</a></li>";
+      $('#p_generated-states').append(state);
+      
+
+    });
+
 
    };
   this._removeEvents = function() {

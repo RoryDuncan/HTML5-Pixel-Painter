@@ -126,6 +126,7 @@ canvas {
     ========================================================================== */
 
 #toolbox {
+
     font-size: 1em;
     color: #404040;
     background-color: #fcfcfc;
@@ -139,9 +140,9 @@ canvas {
     padding-left: 25px;
     padding-right: 25px;
     border-bottom: 1px solid #ddd;
-    font-size:0.6em;
+    font-size:1em;
     text-transform: lowercase;
-    color: #888;
+    color: #088;
     font-weight: 200;
     margin-bottom: 5px;
 }
@@ -149,34 +150,47 @@ canvas {
     font-size: 0.8em;
 }
 
+#toolbox input {
+    width: 66%;
+}
+
 #toolbox > div {
     font-size: 0.8em;
 }
 
 /*The visual aspect of tool buttons */
-#toolbox > .tool {
+#toolbox > .tool  {
+    font-size:0.85em;
     padding: 3px 1px 3px 1px;
     margin:0 10% 0 10%;
-    background-color: #ececec;
+    background-color: #fafafa;
     border: 1px solid #ccc;
-    color: #557;
+    color: #555;
     border-radius: 2px;
-
 }
 #toolbox > .tool:hover {
     color:#000;
-    background-color: #f0f0f0;
     cursor: pointer;
+    border:1px solid #aaa;
 }
 
 /*The visual aspect of active tools */
 #toolbox > .tool-active {
+    font-size:0.85em;
     padding: 3px 1px 3px 1px;
     margin:0 10% 0 10%;
-    color: #599;
+    color: #088;
     border-radius: 2px; 
-    background-color: #eee;
-    border: 1px solid #5cc;
+    border: 1px solid #0cc;
+}
+#toolbox ol {
+    text-align: left;
+    color: #ddd;
+}
+#toolbox ol li a{
+
+    color: #0cc;
+
 }
 .stealing-colors {
     cursor: crosshair;
