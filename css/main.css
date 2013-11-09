@@ -60,13 +60,11 @@ textarea {
    Author's custom styles
    ========================================================================== */
 
-h1 {
-    font-size: 12px;
-    color: #ddd;
-    font-weight: 200;
-}
+
+
 body {
-    background-color: #363636;
+    color: #000;
+    background-color: #f8f8f8;
     padding-top: 50px;
     padding-bottom: 25px;
 }
@@ -76,77 +74,152 @@ body {
     margin: 0 auto;
     width:  66.6%; /* account for borders */
 }
-canvas {
-    
-    background: url('../images/trans.png');
-    border: 1px solid #555;
+.container h1 {
+    font-weight: 200;
+    font-size: 0.75em;
 }
 
+/*  ==========================================================================
+    RELEVANT TO HTML5-Pixel-Painter 
+    Todo: add to own css file
+    ========================================================================== */
+
+canvas {
+    cursor: default;
+    border: 1px solid #ccc;
+    /*background: url('../images/trans.png') rgba(0,0,0,0.45);*/
+    
+}
+/*  ==========================================================================
+     THEME: Blank
+    ========================================================================== */
+
+#toolbox {}
+
+#toolbox > h1 {
+    margin-bottom: 5px;
+}
+#toolbox > p {}
+
+#toolbox > div {}
+
+/*The visual aspect of tool buttons */
+#toolbox > .tool {
+}
+
+/*The visual aspect of active tools */
+#toolbox > .tool-active { 
+
+}
+
+#toolbox:hover {
+    cursor: default;
+}
+
+/*  ==========================================================================
+    END OF BLANK THEME
+    ========================================================================== */
+
+
+/*  ==========================================================================
+    THEME: White
+    ========================================================================== */
+
+#toolbox {
+
+    font-size: 1em;
+    color: #404040;
+    background-color: #fcfcfc;
+    padding: 20px 0px 25px 0px;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+}
+
+#toolbox > h1 {
+    padding-left: 25px;
+    padding-right: 25px;
+    border-bottom: 1px solid #ddd;
+    font-size:1em;
+    text-transform: lowercase;
+    color: #088;
+    font-weight: 200;
+    margin-bottom: 5px;
+}
+#toolbox > p {
+    font-size: 0.8em;
+}
+
+#toolbox input {
+    width: 66%;
+}
+
+#toolbox > div {
+    font-size: 0.8em;
+}
+
+/*The visual aspect of tool buttons */
+#toolbox > .tool  {
+    font-size:0.85em;
+    padding: 3px 1px 3px 1px;
+    margin:0 10% 0 10%;
+    background-color: #fafafa;
+    border: 1px solid #ccc;
+    color: #555;
+    border-radius: 2px;
+}
+#toolbox > .tool:hover {
+    color:#000;
+    cursor: pointer;
+    border:1px solid #aaa;
+}
+
+/*The visual aspect of active tools */
+#toolbox > .tool-active {
+    font-size:0.85em;
+    padding: 3px 1px 3px 1px;
+    margin:0 10% 0 10%;
+    color: #088;
+    border-radius: 2px; 
+    border: 1px solid #0cc;
+}
+#toolbox ol {
+    text-align: left;
+    color: #ddd;
+}
+#toolbox ol li a{
+
+    color: #0cc;
+
+}
+.stealing-colors {
+    cursor: crosshair;
+}
+
+#toolbox:hover {
+    cursor: default;
+}
+
+/* END OF THEME */
+
+
+#colorselector {
+    margin: 0 auto;
+    padding: 0px 0px 0px 0px;
+    border-radius: 3px;
+    width: 30px;
+    height: 30px;
+
+    background:48% 48% url('../images/select2.png') no-repeat #f00;
+}
+
+#colorselector:hover {
+    cursor: pointer;
+}
 
 #colorpickerholder {
     position: absolute;
 }
-
-#toolbox {
-    color: #999;
-    padding: 5px 10px 10px 10px;
-    border-radius: 3px;
-    background-color: #363636;
-    border: 1px solid #555;
-    box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
-    
-}
-#toolbox:hover {
-    cursor: default;
-    border: 1px solid #666;
-    box-shadow: 2px 2px 8px rgba(0,0,0,0.35);
-}
-#dimensions {
-    text-transform: center;
-    font-size: 10px;
-    font-weight:bold;
-}
-#dimensions > span {
-    color: #666;
-    
-
-}
-#toolbox h2, #toolbox h3 {
-    text-align: center;
-    font-size:10px;
-    text-transform: uppercase;
-    padding: 0px 0px 0px 0px;
-    margin: 0px 0px 0px 0px;
-    width:100%;
-    
-}
-#toolbox h2 {
-    font-weight: 400;
-    color: #ddd;
-    padding-bottom: 5px;
-    margin-bottom: 5px;
-    border-bottom: 1px dashed #444;
-}
-#toolbox h3 {
-    color: #cbb;
-    margin-top: 10px;
-    margin-bottom: 5px;
-    font-size:8px;
-
-}
-#colorselector {
-    margin: 0 auto;
-    padding: 0 0 0 0;
-    border-radius: 3px;
-    width: 30px;
-    height: 30px;
-    background:48% 48% url('../images/select2.png') no-repeat;
-    background-color: #f00;
-    border: 1px solid #363636;
-}
-#colorselector:hover {cursor: pointer;}
-
-
 
 
 
