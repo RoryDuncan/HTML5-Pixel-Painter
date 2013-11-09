@@ -249,18 +249,13 @@ var CanvasPixelEditor = function(options) {
     return this;
    };
   this.toolbox = function() {
-    //toolbox is the div in which interface icons can be used.
-
-    //adjust to position absolute exactly next to canvas.
-    var canvas = "#"+this.getId(),
-        pos = $(canvas).offset(),
-        width = this.canvas.width;
-
-    $(this.toolboxId).css({
-      "position":"absolute",
-      "left": pos.left + width + 10,
-      "top": pos.top
+    $( "#" + this.getId() ).css({
+      "float":"left"
     });
+    $(this.toolboxId).css({
+      "float":"right"
+    });
+
     // add in the dynamic content (dimensions of the image)
     $('#p_dimensions').html(this.edit.dimensions.width 
                             + "<span>&#10005;</span>" 
