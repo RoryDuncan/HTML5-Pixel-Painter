@@ -1,8 +1,8 @@
 var CanvasPixelEditor = function(options) {
 
 /* PRIVATE API */
-  /* CLASSES */
 
+  /* CLASSES */
   // CanvasEditor is a sub-class of CanvasPixelEditor
   // it is instantiated at CanvasPixelEditor.start() and attached to CanvasPixelEditor.edit
   var CanvasEditor = function(parentApp, canvas, pixelSize) {
@@ -96,11 +96,47 @@ var CanvasPixelEditor = function(options) {
 
     };
     this.data = function() {};
+   };
+
+  var ToolBox = function(parentApp, parentEl ) {
+    this.app = parentApp;
+    this.parent = parentEl;
+    this.selectors = {
+      "toolbox" : "toolbox",
+      "COLORSELECTOR" : "colorselector",     // jQuery color picker plugin
+      "COLORPICKER" : "colorpickerholder", // jQuery color picker plugin
+      "opacity" : {
+        "slider": "opacity-slider",
+        "output": "opacity-text"
+      },
+      "eyedropper" : "p_eyedropper",
+      "paintbucket" : "p_fill",
+      "dimensions" : "p_dimensions",
+      "generate" : "p_generate",
+      "generatedlist" : "p_generated-states"
+     }
+    this.base = function() {
+      var toolDiv = document.createElement("div");
+      toolDiv.setAttribute("class", "toolbox");
+      this.parent.appendChild(toolDiv);
+      this.$toolbox = $(".toolbox");
+      this.id = ".toolbox";
+     };
+    this.render = function(custom) {
+      var selectors = this.selectorNames;
+      this.custom = custom;
+      try { custom.apply(this); }
+      catch (e) { 
+        throw new Error("Toolbox Render failed because " + e.message);
+      }
+      
+     };
+
+     this.base();
 
   };
 
-  /* HELPERS */
-
+/* HELPERS */
   var getCanvasById = function(Id) {
     if (Id === undefined || Id === void 0 || Id === null) {
       return null;
@@ -179,13 +215,10 @@ var CanvasPixelEditor = function(options) {
     return this;
 
    };
-  this.addToDOM = function(parentEl, options) {
+  this.renderCanvas = function(parentEl, options) {
     // the parent element that the canvas will be attached to
     var parent = document.querySelectorAll(parentEl),
-        canv = document.createElement("canvas"),
-        toolDiv = document.createElement("div");
-
-    this.parent = parent;
+        canv = document.createElement("canvas");
 
     if (parent.length === 0) throw new Error("Specified Parent Element Not found in DOM.");
     // 'defaults'
@@ -198,70 +231,35 @@ var CanvasPixelEditor = function(options) {
       };
     }
 
+    this.parent = parent.item(options.index);
     // add the canvas
-    //TODO adjust all of these to jQuery, since jQuery was added halfway through.
     canv.setAttribute("id", options.id);
+    canv.setAttribute("class", "pixel-editor");
     canv.setAttribute("width", options.width);
     canv.setAttribute("height", options.height);
     parent.item(options.index).appendChild(canv);
     
     this.canvas = document.getElementById(options.id);
+    this.$canvas = $("canvas#" + options.id);
 
-    //add the "tools" div, to put things like the colorpicker
-    toolDiv.setAttribute("id", "toolbox");
-    this.parent.item(0).appendChild(toolDiv);
-    this.toolboxId = "#toolbox";
-    
-    // ideally the following would be in a template,
-    // but for the sake of modularity it isn't
-    var Div = document.createElement("div");
-    var colorChangeId = "colorselector";     // jQuery color picker plugin
-    var colorPickerId = "colorpickerholder"; // jQuery color picker plugin
-    var opacitySliderId = "p_opacity-slider";
-    var opacityOutput = "p_opacity-output";
-    var eyedropperId = "p_eyedropper";
-    var colorFill = "p_fill";
-    var dimensionsId = "p_dimensions";
-    var outputButtonId = "p_generate";
+    this._toolbox = new ToolBox(this, parent.item(options.index) );
+   };
+  this.toolbox = function(custom) {
 
-
-    // Don't forget that the order appended will affect the visual structure as well!
-    // once again, a template would be ideal here.
-    $(this.toolboxId)
-      .append("<h1>Dimensions </h1>")
-      .append("<div id='" + dimensionsId + "'></div>")
-      .append("<h1> Color </h1>")
-      .append("<div id='" + colorChangeId + "'></div>")
-      .append("<div id='" + colorPickerId + "'></div>")
-      .append("<h1> Opacity</h1>")
-      .append("<input id='" + opacitySliderId + "' type='range' value='100'>")
-      .append("<div  id='" + opacityOutput + "'>100%</div>")
-      .append("<h1> Tools </h1>")
-      .append("<div class='tool' id='" + eyedropperId + "' >Grab Color</div>")
-      .append("<div class='tool' id='" + colorFill + "' >Fill</div>")
-      .append("<h1> Output </h1>")
-      .append("<div id='" + outputButtonId+ "' class='tool'>Create Image</div>")
-      .append("<ol id='p_generated-states'></ol>");
-
-
-    this.colorPicker = "#" + colorPickerId;
-    
+    this._toolbox.render( custom );
     return this;
    };
-  this.toolbox = function() {
-    $( "#" + this.getId() ).css({
-      "float":"left"
-    });
-    $(this.toolboxId).css({
-      "float":"right"
-    });
 
-    // add in the dynamic content (dimensions of the image)
-    $('#p_dimensions').html(this.edit.dimensions.width 
-                            + "<span>&#10005;</span>" 
-                            + this.edit.dimensions.height 
-                            + " @ " + this.edit.pixel);
-    };
+  this.float = function(state) {
+    if (state) {
+      $( "#" + this.getId() ).css({"float":"left"});
+      $(this.toolboxId).css({"float":"right"});
+    }
+    else {
+      $( "#" + this.getId() ).css({"float":"none"});
+      $(this.toolboxId).css({"float":"none"});
+    }
+   };
   this.color = function(hex) {
     //sets the color to paint with
     var hex = hex.substring(0,1) !== "#" ? "#" + hex : hex;
@@ -269,12 +267,12 @@ var CanvasPixelEditor = function(options) {
     // show the color on the "swatch"
     $('#colorselector').css('backgroundColor', hex);
     //update the colorpicker
-    $(this.colorPicker).ColorPickerSetColor(hex);
+    $('#colorpickerholder').ColorPickerSetColor(hex);
    };
   this.start = function(width, height, pixelSize) {
     // basic initializer of the painter
 
-    var canvas = document.getElementById(this.getId() );
+    var canvas = document.getElementById( this.getId() );
     if (!canvas) { throw new Error("Canvas was not found."); return; }
     // fix from stack overflow for firefox for mouse captures
     canvas.style.position = "relative";
@@ -290,6 +288,7 @@ var CanvasPixelEditor = function(options) {
     // app.make.image
     this.make = new CanvasToData(this);
     console.log( this.make.array() );
+
 
     // events
     this.painting(true);
@@ -310,7 +309,7 @@ var CanvasPixelEditor = function(options) {
     $(this.colorPicker).hide();
 
     // fix toolbox positioning
-    this.toolbox(); 
+    $('#p_dimensions').html(this.edit.dimensions.width + "<span>&#10005;</span>" + this.edit.dimensions.height + " @ " + this.edit.pixel);
     return this;
    };
   this.painting = function(enabled) {
@@ -365,7 +364,7 @@ var CanvasPixelEditor = function(options) {
         //interface changes
         $("#p_eyedropper").toggleClass('tool');
         $("#p_eyedropper").toggleClass('tool-active');
-        $(selector).toggleClass('stealing-colors');
+        $(selector).toggleClass('color-grabber');
         that.painting(false);
         
         $(selector).click( function(e) {
@@ -378,7 +377,7 @@ var CanvasPixelEditor = function(options) {
           $("#p_eyedropper").toggleClass('tool-active');
           //unbind eyedropper click event and add painting event again
           $(selector).unbind("click");
-          $(selector).toggleClass('stealing-colors');
+          $(selector).toggleClass('color-grabber');
           that.painting(true);
         });
       }
@@ -405,11 +404,11 @@ var CanvasPixelEditor = function(options) {
 
 // If parameters exist, the canvas is appended to another element upon instantiation.
   if (options !== undefined) {
-    this.addToDOM(options.parent, options);
+    this.renderCanvas(options.parent, options);
     this.options = options;
     }
   else {
-    this.addToDOM('body');
+    this.renderCanvas('body');
   }
 
 };
