@@ -1,12 +1,13 @@
 
 
-console.clear();
-var CPE = new CanvasPixelEditor({parent: 'div.container', id:"output"});
 
-var customRender = function() {
-	console.log(this)
+var PixelEditor = new PixelEditor({parent: 'div.container', id:"output"});
+
+//render will be called in the scope of CanvasPixelEditor._toolbox
+var render = function() {
+
 	var selector = this.selectors;
-	
+	this.$toolbox.append('<h1>toolbox</h1>')
 	this.$toolbox.append('<div class="column"></div>')
     $(this.id + " .column:nth(0)")
       .append("<h1> Color </h1>")
@@ -25,13 +26,17 @@ var customRender = function() {
     this.$toolbox.append('<div class="column"></div>')
     $(this.id + " .column:nth(1)")
       .append("<h1>Configuration</h1>")
+      .append("<div class='tool' id='" + selector.renew + "'>New Image</div>")
+      .append("<div class='tool' onclick='PixelEditor.reset()' >Reset</div>")
       .append("<h1>Dimensions </h1>")
-      .append("<div id='" + selector.dimensions + "'></div>");
+      .append("<div id='" + selector.dimensions + "' ></div>");
 
-    
-    
 } 
-CPE.toolbox(customRender);
-CPE.start(10, 10, 40);
 
-console.log(CPE);
+PixelEditor.start({width:10, height:10, pixel:40}, render);
+
+console.log(PixelEditor);
+
+//PixelEditor.setSize({width:800,height:800});
+
+

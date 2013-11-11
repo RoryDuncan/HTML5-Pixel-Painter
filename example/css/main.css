@@ -64,15 +64,17 @@ textarea {
 
 body {
     color: #000;
-    background-color: #f8f8f8;
-    padding-top: 50px;
-    padding-bottom: 25px;
+    background-color: #eee;
+    padding: 2% 2%;
+    width: 100%;
 }
 
 .container {
+
+    width: 66.6%;
     padding:5px 5px 5px 5px;
     margin: 0 auto;
-    width:  66.6%; /* account for borders */
+
 }
 .container h1 {
     font-weight: 200;
@@ -85,9 +87,8 @@ body {
     ========================================================================== */
 
 canvas {
-    cursor: default;
-    border: 1px solid #ccc;
-    /*background: url('../images/trans.png') rgba(0,0,0,0.45);*/
+
+
     
 }
 /*  ==========================================================================
@@ -126,6 +127,7 @@ canvas {
     ========================================================================== */
 
 .toolbox {
+    float:left;
     font-size: 1em;
     color: #404040;
     background-color: #f5f5f5;    
@@ -133,6 +135,48 @@ canvas {
     padding: 2px 3px 2px 3px;
     border-radius: 2px;
     border: 1px solid #ddd;
+}
+
+.pixel-editor {
+    cursor: default;
+    border: 1px solid #ccc;
+    background: url('../images/trans.png');
+    margin: 0px 5px 5px 5px;
+    float:left;
+}
+.toolbox .pixeleditor-modal {
+    position:fixed;
+    left:40%;
+    border-radius: 2px;
+    border: 1px solid #aaa;
+    padding: 25px 35px 25px 35px;
+    background-color: #ffffff;
+    box-shadow: 0px 0px 40px rgba(0,0,0,0.15);
+    
+}
+.toolbox .pixeleditor-modal hr {
+    clear: both;
+}
+.toolbox .pixeleditor-modal label {
+    vertical-align: bottom;
+    margin-bottom: 5px;
+    margin-top: 4px;
+    float:left;
+}
+.toolbox .pixeleditor-modal input {
+    float:right;
+    margin-bottom: 5px;
+}
+.toolbox .pixeleditor-modal .tool {
+    margin: 0 0;
+    width:45%;
+}
+.toolbox .pixeleditor-modal .tool:nth-of-type(1) {
+    float: right;
+}
+.toolbox .pixeleditor-modal .tool:nth-of-type(2) {
+    background-color: #ddd;
+    float: left;
 }
 
 .toolbox .column {
@@ -143,9 +187,12 @@ canvas {
     border: 1px solid #ddd;
     display: inline-block;
 }
+.toolbox h1 {
+    color: #000;
+    font-size:0.65em;
+}
 
-
-.toolbox  h1 {
+.toolbox .column h1 {
     padding-left: 25px;
     padding-right: 25px;
     border-bottom: 1px solid #ddd;
@@ -158,9 +205,10 @@ canvas {
 
 .toolbox input {
     width: 66%;
+    cursor: pointer;
 }
 
-.toolbox  div {
+.toolbox div {
     font-size: 0.8em;
 }
 
@@ -223,7 +271,8 @@ canvas {
 }
 
 #colorpickerholder {
-    position: absolute;
+    position: fixed;
+    right: 5%;
 }
 
 

@@ -1,8 +1,8 @@
-var CanvasPixelEditor = function(options) {
+var PixelEditor = function(options) {
 
 /* PRIVATE API */
 
-  /* CLASSES */
+  /* SUB CLASSES */
   // CanvasEditor is a sub-class of CanvasPixelEditor
   // it is instantiated at CanvasPixelEditor.start() and attached to CanvasPixelEditor.edit
   var CanvasEditor = function(parentApp, canvas, pixelSize) {
@@ -97,7 +97,7 @@ var CanvasPixelEditor = function(options) {
     };
     this.data = function() {};
    };
-
+   //toolbox is the div containing all of the interactive things. it's full of things 
   var ToolBox = function(parentApp, parentEl ) {
     this.app = parentApp;
     this.parent = parentEl;
@@ -109,11 +109,12 @@ var CanvasPixelEditor = function(options) {
         "slider": "opacity-slider",
         "output": "opacity-text"
       },
-      "eyedropper" : "p_eyedropper",
-      "paintbucket" : "p_fill",
-      "dimensions" : "p_dimensions",
-      "generate" : "p_generate",
-      "generatedlist" : "p_generated-states"
+      "eyedropper" : "pixeleditor-eyedropper",
+      "paintbucket" : "pixeleditor-fill",
+      "dimensions" : "pixeleditor-dimensions",
+      "generate" : "pixeleditor-generate",
+      "generatedlist" : "pixeleditor-generated-states",
+      "renew" : "pixeleditor-new"
      }
     this.base = function() {
       var toolDiv = document.createElement("div");
@@ -122,19 +123,22 @@ var CanvasPixelEditor = function(options) {
       this.$toolbox = $(".toolbox");
       this.id = ".toolbox";
      };
+    this.reset = function() {
+      !!this.$toolbox ?  this.$toolbox.html("") : this.base();
+     };
     this.render = function(custom) {
-      var selectors = this.selectorNames;
-      this.custom = custom;
-      try { custom.apply(this); }
+      try {
+        this.reset();
+        custom.apply(this);
+      }
       catch (e) { 
         throw new Error("Toolbox Render failed because " + e.message);
-      }
-      
+      } 
      };
 
-     this.base();
+    this.base();
 
-  };
+   };
 
 /* HELPERS */
   var getCanvasById = function(Id) {
@@ -184,9 +188,6 @@ var CanvasPixelEditor = function(options) {
 
 /* PUBLIC API */
   this.canvas = null;
-  this.get = function() {
-    return this.canvas;
-   };
   this.getId = function() {
     return this.canvas.attributes.id.value.toString();
    };
@@ -249,8 +250,7 @@ var CanvasPixelEditor = function(options) {
     this._toolbox.render( custom );
     return this;
    };
-
-  this.float = function(state) {
+  this.toggleFloat = function(state) {
     if (state) {
       $( "#" + this.getId() ).css({"float":"left"});
       $(this.toolboxId).css({"float":"right"});
@@ -269,17 +269,20 @@ var CanvasPixelEditor = function(options) {
     //update the colorpicker
     $('#colorpickerholder').ColorPickerSetColor(hex);
    };
-  this.start = function(width, height, pixelSize) {
-    // basic initializer of the painter
-
+  this.start = function(dimensions, customRender) {
+    // The initializer of the app. 
+    if (!dimensions) {
+      throw new Error("No Dimensions Object inputed.");
+    }
+    
     var canvas = document.getElementById( this.getId() );
     if (!canvas) { throw new Error("Canvas was not found."); return; }
     // fix from stack overflow for firefox for mouse captures
     canvas.style.position = "relative";
-    var pixelSize = !pixelSize ? pixelSize = defaultPixelSize : pixelSize;
+    var pixelSize = !dimensions.pixel ? pixelSize = 20 : dimensions.pixel;
     this.setSize({
-      width: width*pixelSize,
-      height: height*pixelSize
+      "width": dimensions.width * pixelSize,
+      "height": dimensions.height * pixelSize
     });
     // edit to make usage a better mental model. 
     // ie Canvas.edit.fill("#ff0")
@@ -287,17 +290,18 @@ var CanvasPixelEditor = function(options) {
     // same with 'make'
     // app.make.image
     this.make = new CanvasToData(this);
-    console.log( this.make.array() );
 
+    if (!!customRender) {
+      this.toolbox(customRender)
+    }
 
     // events
-    this.painting(true);
-    this._events();
+    this.events(true);
 
 
     //add colorpicker
     var that = this;
-    $(this.colorPicker).ColorPicker({
+    $('#colorpickerholder').ColorPicker({
         flat: true,
         color: '#ff0000',
         onSubmit: function(hsb, hex, rgb) {
@@ -306,13 +310,14 @@ var CanvasPixelEditor = function(options) {
         }
     });
     // create, then hide the colorpicker modal
-    $(this.colorPicker).hide();
+    $('#colorpickerholder').hide();
 
-    // fix toolbox positioning
-    $('#p_dimensions').html(this.edit.dimensions.width + "<span>&#10005;</span>" + this.edit.dimensions.height + " @ " + this.edit.pixel);
+    // display dimensions to user
+    $("#"+this._toolbox.selectors.dimensions).html( this.edit.dimensions.width + "<span>&#10005;</span>" + this.edit.dimensions.height + " @ " + this.edit.pixel );
     return this;
    };
-  this.painting = function(enabled) {
+  this.event = {};
+  this.event.painting = function(enabled) {
     // because painting is the main functionality,
     // it has a different abstraction than the other events 
     var that = this, // events lose scope, so use "that" when you need "this"
@@ -330,76 +335,152 @@ var CanvasPixelEditor = function(options) {
       $(selector).unbind("click");
     }
    };
-  this._events = function() {
-    var that = this,
-        selector = ("#"+that.getId());
-    //color selector
-    $('#colorselector').click(function() {
+  this.event.colorpicker = function(enabled) {
 
-      $('div.colorpicker_submit').click(function(){
-        $('#colorpickerholder').hide();
+    if (enabled === true) {
+      $('#colorselector').click(function() {
+
+        $('div.colorpicker_submit').click( function() {
+          $('#colorpickerholder').hide();
+        });
+
+        var display = $('#colorpickerholder').css("display");
+        if (display === "none") {
+          $('#colorpickerholder').show();
+        }
+        else if (display !== "none") {
+          $('#colorpickerholder').hide();
+        }
+       });
+    } else $('#colorselector').unbind("click");
+   };
+  this.event.opacity = function(enabled) {
+
+    var that = this;
+    var slider = "#" + this._toolbox.selectors.opacity.slider;
+    var output = "#" + this._toolbox.selectors.opacity.text;
+
+    if (enabled === true) {
+
+      $(slider).change( function(e) {
+        that.edit.opacity = this.value/100;
+        $(output).text(this.value + "%");
+       });
+
+    }
+    else $(slider).unbind("click");
+   };
+  this.event.fill = function(enabled) {
+
+    var that = this;
+    var paintfill = "#" + this._toolbox.selectors.paintbucket;
+
+    if (enabled === true) {
+
+      $(paintfill).click( function(e) {
+        that.edit.fill();
       });
 
-      var display = $('#colorpickerholder').css("display");
-      if (display === "none") {
-        $('#colorpickerholder').show();
-      }
-      else if (display === "block") {
-        $('#colorpickerholder').hide();
-      }
-    });
-    //opacity slider
-    $('#p_opacity-slider').change(function(e){
-      that.edit.opacity = this.value/100;
-      $('#p_opacity-output').text(this.value + "%");
+    }
+    else $(paintfill).unbind("click");
+   
+   };
+  this.event.eyedropper = function(enabled) {
 
-    })
-    $('#p_fill').click(function(e){
-      that.edit.fill();
-    });
+    var that = this;
+    var selector = ("#"+this.getId() );
+    var $eyedropper = $( '#' + this._toolbox.selectors.eyedropper );
 
-    //eyedropper tool
-    $('#p_eyedropper').click( function() {
-      if ( !$('#p_eyedropper').hasClass('tool-active') ) {
+    if (enabled === true) {
+
+      $eyedropper.click( function() {
+      
+      if ( !$eyedropper.hasClass('tool-active') ) {
         //interface changes
-        $("#p_eyedropper").toggleClass('tool');
-        $("#p_eyedropper").toggleClass('tool-active');
+        $eyedropper.toggleClass('tool');
+        $eyedropper.toggleClass('tool-active');
         $(selector).toggleClass('color-grabber');
         that.painting(false);
-        
         $(selector).click( function(e) {
           
           var mouse = getMouse(e, that.canvas);
           var color = that.edit.getColorAt(mouse.x, mouse.y);
           //set the color to the one the eyedropper tool picked up.
           that.color(color);
-          $("#p_eyedropper").toggleClass('tool');
-          $("#p_eyedropper").toggleClass('tool-active');
+          $eyedropper.toggleClass('tool');
+          $eyedropper.toggleClass('tool-active');
           //unbind eyedropper click event and add painting event again
           $(selector).unbind("click");
           $(selector).toggleClass('color-grabber');
           that.painting(true);
         });
       }
-    });
 
-    // Image Output
-    $('#p_generate').click(function(e){
-      that.imagesGenerated = that.imagesGenerated === undefined ? 0 : that.imagesGenerated+1;
-      var state = "<li><a target='_blank' href='" + that.make.image() + "' > State " + that.imagesGenerated +"</a></li>";
-      $('#p_generated-states').append(state);
-      
+     });
 
-    });
-
-
+    }
+    else $eyedropper.unbind("click");
+   
    };
-  this._removeEvents = function() {
-    // todo
+  this.event.makeImageState = function(enabled) {
+    var that = this;
+    var outputButton = "#" + this._toolbox.selectors.generate;
+    var outputList = "#" + this._toolbox.selectors.generatedlist;
+
+    if (enabled === true) {
+
+      $(outputButton).click( function(e) {
+        that.imagesGenerated = that.imagesGenerated === undefined ? 0 : that.imagesGenerated+1;
+        var state = "<li><a target='_blank' href='" + that.make.image() + "' > State " + that.imagesGenerated + "</a></li>";
+        $(outputList).append(state);
+      });
+
+    } else $(outputButton).unbind("click");
    };
-  this.end = function() {};
+  this.event.renew = function(enabled) {
+    var wrapper = "<div class='pixeleditor-modal'><h1>New Dimensions</h1></div>"
+    var inputWidth = '<label for="pixeleditor-input-width">Width:</label><input type="text" id="pixeleditor-input-width" name="pixeleditor-input-width" /><br />';
+    var inputHeight = '<label for="pixeleditor-input-height">Height:</label><input type="text" id="pixeleditor-input-height" name="pixeleditor-input-height" /><br />';
+    var inputPixels = '<label for="pixeleditor-input-pixel">Pixels</label><input type="text" id="pixeleditor-input-pixel" name="pixeleditor-input-pixel" /><br /><hr>';
+
+    var confirm = "<div class='tool'>Okay</div><div class='tool'>Cancel</div><div class='clearfix'></div>"
+
+    if (enabled === true) {
+      var renew = "#" + this._toolbox.selectors.renew;
+
+      $(renew).click(function(){
+        $(renew).after(wrapper);
+        $(".pixeleditor-modal")
+          .append(inputWidth)
+          .append(inputHeight)
+          .append(inputPixels)
+          .append(confirm);
+      });
+    }
+  };
+  this.events = function(enabled) {
+    var event = this.event;
+    // pass in a true or false to enabled or disable all events
+    event.painting.call(this, enabled);
+    event.colorpicker.call(this, enabled);
+    event.opacity.call(this, enabled);
+    event.fill.call(this, enabled);
+    event.eyedropper.call(this, enabled);
+    event.makeImageState.call(this, enabled);
+    event.renew.call(this, enabled);
+   };
   this.save = function() {};
-  this.reset = function() {};
+  this.dimensions = function(x,y,p) {
+
+   };
+  this.reset = function(skipdialogue) {
+    if (skipdialogue || window.confirm("Are you sure you? The current image you are working on will be lost.") ) this.edit.clear();
+
+   };
+  this.resize = function() {}
+  this.newImage = function() {
+    this.reset();
+  }
 
 
 // If parameters exist, the canvas is appended to another element upon instantiation.
