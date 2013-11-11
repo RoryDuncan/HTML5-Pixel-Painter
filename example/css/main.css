@@ -178,6 +178,9 @@ canvas {
     background-color: #ddd;
     float: left;
 }
+.toolbox .pixeleditor-modal .error {
+    border:  2px solid #f66;
+}
 
 .toolbox .column {
     vertical-align: top;

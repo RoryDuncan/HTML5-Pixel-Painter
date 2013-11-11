@@ -301,16 +301,21 @@ var PixelEditor = function(options) {
 
     //add colorpicker
     var that = this;
-    $('#colorpickerholder').ColorPicker({
-        flat: true,
-        color: '#ff0000',
-        onSubmit: function(hsb, hex, rgb) {
-            that.color('#' + hex);
-            $('#colorpickerholder').hide();
-        }
-    });
-    // create, then hide the colorpicker modal
-    $('#colorpickerholder').hide();
+
+    if ( !this.colorPickerInstantiated ) {
+
+      $('#colorpickerholder').ColorPicker({
+          flat: true,
+          color: '#ff0000',
+          onSubmit: function(hsb, hex, rgb) {
+              that.color('#' + hex);
+              $('#colorpickerholder').hide();
+          }
+      });
+      // create, then hide the colorpicker modal
+      $('#colorpickerholder').hide();
+      this.colorPickerInstantiated = true;
+    }
 
     // display dimensions to user
     $("#"+this._toolbox.selectors.dimensions).html( this.edit.dimensions.width + "<span>&#10005;</span>" + this.edit.dimensions.height + " @ " + this.edit.pixel );
@@ -386,7 +391,7 @@ var PixelEditor = function(options) {
    
    };
   this.event.eyedropper = function(enabled) {
-
+    console.log(this);
     var that = this;
     var selector = ("#"+this.getId() );
     var $eyedropper = $( '#' + this._toolbox.selectors.eyedropper );
@@ -400,7 +405,8 @@ var PixelEditor = function(options) {
         $eyedropper.toggleClass('tool');
         $eyedropper.toggleClass('tool-active');
         $(selector).toggleClass('color-grabber');
-        that.painting(false);
+        console.log(that);
+        that.event.painting.call(that, false);
         $(selector).click( function(e) {
           
           var mouse = getMouse(e, that.canvas);
@@ -412,7 +418,7 @@ var PixelEditor = function(options) {
           //unbind eyedropper click event and add painting event again
           $(selector).unbind("click");
           $(selector).toggleClass('color-grabber');
-          that.painting(true);
+          that.event.painting.call(that, true);
         });
       }
 
@@ -438,26 +444,61 @@ var PixelEditor = function(options) {
     } else $(outputButton).unbind("click");
    };
   this.event.renew = function(enabled) {
+
+    var getData = function() {
+            var height = $('#pixeleditor-input-height').val();
+            var width = $('#pixeleditor-input-width').val();
+            var pixel = $('#pixeleditor-input-pixel').val();
+            return {"width":width, "height":height, "pixel": pixel};
+    };
+    var that = this;
     var wrapper = "<div class='pixeleditor-modal'><h1>New Dimensions</h1></div>"
     var inputWidth = '<label for="pixeleditor-input-width">Width:</label><input type="text" id="pixeleditor-input-width" name="pixeleditor-input-width" /><br />';
     var inputHeight = '<label for="pixeleditor-input-height">Height:</label><input type="text" id="pixeleditor-input-height" name="pixeleditor-input-height" /><br />';
     var inputPixels = '<label for="pixeleditor-input-pixel">Pixels</label><input type="text" id="pixeleditor-input-pixel" name="pixeleditor-input-pixel" /><br /><hr>';
 
-    var confirm = "<div class='tool'>Okay</div><div class='tool'>Cancel</div><div class='clearfix'></div>"
+    var confirm = "<div class='tool confirm'>Okay</div><div class='tool cancel'>Nevermind</div><div class='clearfix'></div>"
 
     if (enabled === true) {
       var renew = "#" + this._toolbox.selectors.renew;
 
       $(renew).click(function(){
-        $(renew).after(wrapper);
-        $(".pixeleditor-modal")
-          .append(inputWidth)
-          .append(inputHeight)
-          .append(inputPixels)
-          .append(confirm);
+        if ($(".pixeleditor-modal").length === 0) {
+
+          $(renew).after(wrapper);
+          $(".pixeleditor-modal")
+            .append(inputWidth)
+            .append(inputHeight)
+            .append(inputPixels)
+            .append(confirm);
+
+            //show the current dimensions
+            $('#pixeleditor-input-height').val(that.edit.dimensions.height);
+            $('#pixeleditor-input-width').val(that.edit.dimensions.width);
+            $('#pixeleditor-input-pixel').val(that.edit.pixel);
+
+            $('.pixeleditor-modal .cancel').click(function(){
+              $(".pixeleditor-modal").remove();
+            });
+            $('.pixeleditor-modal .confirm').click(function(){
+              var height = $('#pixeleditor-input-height').val();
+              var width = $('#pixeleditor-input-width').val();
+              var pixel = $('#pixeleditor-input-pixel').val();
+              if (height.length === 0 ) { $('#pixeleditor-input-height').addClass('error').focus(); return; }
+              if (width.length === 0  ) { $('#pixeleditor-input-width').addClass('error').focus(); return; }
+              if (pixel.length === 0  ) { $('#pixeleditor-input-pixel').addClass('error').focus(); return; }
+              
+              var data = getData();
+              $(".pixeleditor-modal").remove();
+              that.start(data);
+              
+
+
+            })
+        }
       });
     }
-  };
+   };
   this.events = function(enabled) {
     var event = this.event;
     // pass in a true or false to enabled or disable all events
@@ -470,9 +511,6 @@ var PixelEditor = function(options) {
     event.renew.call(this, enabled);
    };
   this.save = function() {};
-  this.dimensions = function(x,y,p) {
-
-   };
   this.reset = function(skipdialogue) {
     if (skipdialogue || window.confirm("Are you sure you? The current image you are working on will be lost.") ) this.edit.clear();
 
