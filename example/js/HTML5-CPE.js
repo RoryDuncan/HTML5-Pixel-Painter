@@ -54,6 +54,12 @@ var PixelEditor = function(options) {
       colorData = "#" + colorData;
       return colorData;
      };
+    this.getAlphaAt = function(x, y) {
+
+      var colorData = this.context.getImageData(x,y,1,1);
+          colorData = colorData.data[3];
+          return colorData / 255;
+     }; 
     this.getPixel = function(_x, _y) {
       var x = ~~(_x / this.pixel),
           y = ~~(_y / this.pixel),
@@ -269,7 +275,7 @@ var PixelEditor = function(options) {
     //update the colorpicker
     $('#colorpickerholder').ColorPickerSetColor(hex);
    };
-  this.start = function(dimensions, customRender) {
+  this.start = function(dimensions, customRender, initEvents) {
     // The initializer of the app. 
     if (!dimensions) {
       throw new Error("No Dimensions Object inputed.");
@@ -296,14 +302,14 @@ var PixelEditor = function(options) {
     }
 
     // events
-    this.events(true);
+    if (!initEvents) { this.events(true) };
 
 
     //add colorpicker
     var that = this;
 
-    if ( !this.colorPickerInstantiated ) {
 
+    if ( !this.colorPickerInstantiated ) {
       $('#colorpickerholder').ColorPicker({
           flat: true,
           color: '#ff0000',
@@ -391,7 +397,6 @@ var PixelEditor = function(options) {
    
    };
   this.event.eyedropper = function(enabled) {
-    console.log(this);
     var that = this;
     var selector = ("#"+this.getId() );
     var $eyedropper = $( '#' + this._toolbox.selectors.eyedropper );
@@ -405,7 +410,7 @@ var PixelEditor = function(options) {
         $eyedropper.toggleClass('tool');
         $eyedropper.toggleClass('tool-active');
         $(selector).toggleClass('color-grabber');
-        console.log(that);
+
         that.event.painting.call(that, false);
         $(selector).click( function(e) {
           
@@ -432,6 +437,7 @@ var PixelEditor = function(options) {
     var that = this;
     var outputButton = "#" + this._toolbox.selectors.generate;
     var outputList = "#" + this._toolbox.selectors.generatedlist;
+    var outputClear = outputList + "-clear";
 
     if (enabled === true) {
 
@@ -439,6 +445,11 @@ var PixelEditor = function(options) {
         that.imagesGenerated = that.imagesGenerated === undefined ? 0 : that.imagesGenerated+1;
         var state = "<li><a target='_blank' href='" + that.make.image() + "' > State " + that.imagesGenerated + "</a></li>";
         $(outputList).append(state);
+      });
+
+      $(outputClear).click( function(e) {
+        if (window.confirm("This will delete your current stack of images, but not the image you are working on. Proceed?") ) $(outputList).html("");
+         
       });
 
     } else $(outputButton).unbind("click");
@@ -490,7 +501,7 @@ var PixelEditor = function(options) {
               
               var data = getData();
               $(".pixeleditor-modal").remove();
-              that.start(data);
+              that.start(data, null, true);
               
 
 
@@ -502,6 +513,7 @@ var PixelEditor = function(options) {
   this.events = function(enabled) {
     var event = this.event;
     // pass in a true or false to enabled or disable all events
+
     event.painting.call(this, enabled);
     event.colorpicker.call(this, enabled);
     event.opacity.call(this, enabled);
@@ -512,7 +524,7 @@ var PixelEditor = function(options) {
    };
   this.save = function() {};
   this.reset = function(skipdialogue) {
-    if (skipdialogue || window.confirm("Are you sure you? The current image you are working on will be lost.") ) this.edit.clear();
+    if (skipdialogue || window.confirm("Are you sure? The current image you are working on will be lost.") ) this.edit.clear();
 
    };
   this.resize = function() {}
