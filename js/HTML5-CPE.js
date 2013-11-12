@@ -1,8 +1,8 @@
-var CanvasPixelEditor = function(options) {
+var PixelEditor = function(options) {
 
 /* PRIVATE API */
-  /* CLASSES */
 
+  /* SUB CLASSES */
   // CanvasEditor is a sub-class of CanvasPixelEditor
   // it is instantiated at CanvasPixelEditor.start() and attached to CanvasPixelEditor.edit
   var CanvasEditor = function(parentApp, canvas, pixelSize) {
@@ -54,6 +54,12 @@ var CanvasPixelEditor = function(options) {
       colorData = "#" + colorData;
       return colorData;
      };
+    this.getAlphaAt = function(x, y) {
+
+      var colorData = this.context.getImageData(x,y,1,1);
+          colorData = colorData.data[3];
+          return colorData / 255;
+     }; 
     this.getPixel = function(_x, _y) {
       var x = ~~(_x / this.pixel),
           y = ~~(_y / this.pixel),
@@ -96,11 +102,51 @@ var CanvasPixelEditor = function(options) {
 
     };
     this.data = function() {};
+   };
+   //toolbox is the div containing all of the interactive things. it's full of things 
+  var ToolBox = function(parentApp, parentEl ) {
+    this.app = parentApp;
+    this.parent = parentEl;
+    this.selectors = {
+      "toolbox" : "toolbox",
+      "COLORSELECTOR" : "colorselector",     // jQuery color picker plugin
+      "COLORPICKER" : "colorpickerholder", // jQuery color picker plugin
+      "opacity" : {
+        "slider": "opacity-slider",
+        "output": "opacity-text"
+      },
+      "eyedropper" : "pixeleditor-eyedropper",
+      "paintbucket" : "pixeleditor-fill",
+      "dimensions" : "pixeleditor-dimensions",
+      "generate" : "pixeleditor-generate",
+      "generatedlist" : "pixeleditor-generated-states",
+      "renew" : "pixeleditor-new"
+     }
+    this.base = function() {
+      var toolDiv = document.createElement("div");
+      toolDiv.setAttribute("class", "toolbox");
+      this.parent.appendChild(toolDiv);
+      this.$toolbox = $(".toolbox");
+      this.id = ".toolbox";
+     };
+    this.reset = function() {
+      !!this.$toolbox ?  this.$toolbox.html("") : this.base();
+     };
+    this.render = function(custom) {
+      try {
+        this.reset();
+        custom.apply(this);
+      }
+      catch (e) { 
+        throw new Error("Toolbox Render failed because " + e.message);
+      } 
+     };
 
-  };
+    this.base();
 
-  /* HELPERS */
+   };
 
+/* HELPERS */
   var getCanvasById = function(Id) {
     if (Id === undefined || Id === void 0 || Id === null) {
       return null;
@@ -148,9 +194,6 @@ var CanvasPixelEditor = function(options) {
 
 /* PUBLIC API */
   this.canvas = null;
-  this.get = function() {
-    return this.canvas;
-   };
   this.getId = function() {
     return this.canvas.attributes.id.value.toString();
    };
@@ -179,13 +222,10 @@ var CanvasPixelEditor = function(options) {
     return this;
 
    };
-  this.addToDOM = function(parentEl, options) {
+  this.renderCanvas = function(parentEl, options) {
     // the parent element that the canvas will be attached to
     var parent = document.querySelectorAll(parentEl),
-        canv = document.createElement("canvas"),
-        toolDiv = document.createElement("div");
-
-    this.parent = parent;
+        canv = document.createElement("canvas");
 
     if (parent.length === 0) throw new Error("Specified Parent Element Not found in DOM.");
     // 'defaults'
@@ -198,70 +238,34 @@ var CanvasPixelEditor = function(options) {
       };
     }
 
+    this.parent = parent.item(options.index);
     // add the canvas
-    //TODO adjust all of these to jQuery, since jQuery was added halfway through.
     canv.setAttribute("id", options.id);
+    canv.setAttribute("class", "pixel-editor");
     canv.setAttribute("width", options.width);
     canv.setAttribute("height", options.height);
     parent.item(options.index).appendChild(canv);
     
     this.canvas = document.getElementById(options.id);
+    this.$canvas = $("canvas#" + options.id);
 
-    //add the "tools" div, to put things like the colorpicker
-    toolDiv.setAttribute("id", "toolbox");
-    this.parent.item(0).appendChild(toolDiv);
-    this.toolboxId = "#toolbox";
-    
-    // ideally the following would be in a template,
-    // but for the sake of modularity it isn't
-    var Div = document.createElement("div");
-    var colorChangeId = "colorselector";     // jQuery color picker plugin
-    var colorPickerId = "colorpickerholder"; // jQuery color picker plugin
-    var opacitySliderId = "p_opacity-slider";
-    var opacityOutput = "p_opacity-output";
-    var eyedropperId = "p_eyedropper";
-    var colorFill = "p_fill";
-    var dimensionsId = "p_dimensions";
-    var outputButtonId = "p_generate";
+    this._toolbox = new ToolBox(this, parent.item(options.index) );
+   };
+  this.toolbox = function(custom) {
 
-
-    // Don't forget that the order appended will affect the visual structure as well!
-    // once again, a template would be ideal here.
-    $(this.toolboxId)
-      .append("<h1>Dimensions </h1>")
-      .append("<div id='" + dimensionsId + "'></div>")
-      .append("<h1> Color </h1>")
-      .append("<div id='" + colorChangeId + "'></div>")
-      .append("<div id='" + colorPickerId + "'></div>")
-      .append("<h1> Opacity</h1>")
-      .append("<input id='" + opacitySliderId + "' type='range' value='100'>")
-      .append("<div  id='" + opacityOutput + "'>100%</div>")
-      .append("<h1> Tools </h1>")
-      .append("<div class='tool' id='" + eyedropperId + "' >Grab Color</div>")
-      .append("<div class='tool' id='" + colorFill + "' >Fill</div>")
-      .append("<h1> Output </h1>")
-      .append("<div id='" + outputButtonId+ "' class='tool'>Create Image</div>")
-      .append("<ol id='p_generated-states'></ol>");
-
-
-    this.colorPicker = "#" + colorPickerId;
-    
+    this._toolbox.render( custom );
     return this;
    };
-  this.toolbox = function() {
-    $( "#" + this.getId() ).css({
-      "float":"left"
-    });
-    $(this.toolboxId).css({
-      "float":"right"
-    });
-
-    // add in the dynamic content (dimensions of the image)
-    $('#p_dimensions').html(this.edit.dimensions.width 
-                            + "<span>&#10005;</span>" 
-                            + this.edit.dimensions.height 
-                            + " @ " + this.edit.pixel);
-    };
+  this.toggleFloat = function(state) {
+    if (state) {
+      $( "#" + this.getId() ).css({"float":"left"});
+      $(this.toolboxId).css({"float":"right"});
+    }
+    else {
+      $( "#" + this.getId() ).css({"float":"none"});
+      $(this.toolboxId).css({"float":"none"});
+    }
+   };
   this.color = function(hex) {
     //sets the color to paint with
     var hex = hex.substring(0,1) !== "#" ? "#" + hex : hex;
@@ -269,19 +273,22 @@ var CanvasPixelEditor = function(options) {
     // show the color on the "swatch"
     $('#colorselector').css('backgroundColor', hex);
     //update the colorpicker
-    $(this.colorPicker).ColorPickerSetColor(hex);
+    $('#colorpickerholder').ColorPickerSetColor(hex);
    };
-  this.start = function(width, height, pixelSize) {
-    // basic initializer of the painter
-
-    var canvas = document.getElementById(this.getId() );
+  this.start = function(dimensions, customRender, initEvents) {
+    // The initializer of the app. 
+    if (!dimensions) {
+      throw new Error("No Dimensions Object inputed.");
+    }
+    
+    var canvas = document.getElementById( this.getId() );
     if (!canvas) { throw new Error("Canvas was not found."); return; }
     // fix from stack overflow for firefox for mouse captures
     canvas.style.position = "relative";
-    var pixelSize = !pixelSize ? pixelSize = defaultPixelSize : pixelSize;
+    var pixelSize = !dimensions.pixel ? pixelSize = 20 : dimensions.pixel;
     this.setSize({
-      width: width*pixelSize,
-      height: height*pixelSize
+      "width": dimensions.width * pixelSize,
+      "height": dimensions.height * pixelSize
     });
     // edit to make usage a better mental model. 
     // ie Canvas.edit.fill("#ff0")
@@ -289,31 +296,39 @@ var CanvasPixelEditor = function(options) {
     // same with 'make'
     // app.make.image
     this.make = new CanvasToData(this);
-    console.log( this.make.array() );
+
+    if (!!customRender) {
+      this.toolbox(customRender)
+    }
 
     // events
-    this.painting(true);
-    this._events();
+    if (!initEvents) { this.events(true) };
 
 
     //add colorpicker
     var that = this;
-    $(this.colorPicker).ColorPicker({
-        flat: true,
-        color: '#ff0000',
-        onSubmit: function(hsb, hex, rgb) {
-            that.color('#' + hex);
-            $('#colorpickerholder').hide();
-        }
-    });
-    // create, then hide the colorpicker modal
-    $(this.colorPicker).hide();
 
-    // fix toolbox positioning
-    this.toolbox(); 
+
+    if ( !this.colorPickerInstantiated ) {
+      $('#colorpickerholder').ColorPicker({
+          flat: true,
+          color: '#ff0000',
+          onSubmit: function(hsb, hex, rgb) {
+              that.color('#' + hex);
+              $('#colorpickerholder').hide();
+          }
+      });
+      // create, then hide the colorpicker modal
+      $('#colorpickerholder').hide();
+      this.colorPickerInstantiated = true;
+    }
+
+    // display dimensions to user
+    $("#"+this._toolbox.selectors.dimensions).html( this.edit.dimensions.width + "<span>&#10005;</span>" + this.edit.dimensions.height + " @ " + this.edit.pixel );
     return this;
    };
-  this.painting = function(enabled) {
+  this.event = {};
+  this.event.painting = function(enabled) {
     // because painting is the main functionality,
     // it has a different abstraction than the other events 
     var that = this, // events lose scope, so use "that" when you need "this"
@@ -331,85 +346,200 @@ var CanvasPixelEditor = function(options) {
       $(selector).unbind("click");
     }
    };
-  this._events = function() {
-    var that = this,
-        selector = ("#"+that.getId());
-    //color selector
-    $('#colorselector').click(function() {
+  this.event.colorpicker = function(enabled) {
 
-      $('div.colorpicker_submit').click(function(){
-        $('#colorpickerholder').hide();
+    if (enabled === true) {
+      $('#colorselector').click(function() {
+
+        $('div.colorpicker_submit').click( function() {
+          $('#colorpickerholder').hide();
+        });
+
+        var display = $('#colorpickerholder').css("display");
+        if (display === "none") {
+          $('#colorpickerholder').show();
+        }
+        else if (display !== "none") {
+          $('#colorpickerholder').hide();
+        }
+       });
+    } else $('#colorselector').unbind("click");
+   };
+  this.event.opacity = function(enabled) {
+
+    var that = this;
+    var slider = "#" + this._toolbox.selectors.opacity.slider;
+    var output = "#" + this._toolbox.selectors.opacity.text;
+
+    if (enabled === true) {
+
+      $(slider).change( function(e) {
+        that.edit.opacity = this.value/100;
+        $(output).text(this.value + "%");
+       });
+
+    }
+    else $(slider).unbind("click");
+   };
+  this.event.fill = function(enabled) {
+
+    var that = this;
+    var paintfill = "#" + this._toolbox.selectors.paintbucket;
+
+    if (enabled === true) {
+
+      $(paintfill).click( function(e) {
+        that.edit.fill();
       });
 
-      var display = $('#colorpickerholder').css("display");
-      if (display === "none") {
-        $('#colorpickerholder').show();
-      }
-      else if (display === "block") {
-        $('#colorpickerholder').hide();
-      }
-    });
-    //opacity slider
-    $('#p_opacity-slider').change(function(e){
-      that.edit.opacity = this.value/100;
-      $('#p_opacity-output').text(this.value + "%");
+    }
+    else $(paintfill).unbind("click");
+   
+   };
+  this.event.eyedropper = function(enabled) {
+    var that = this;
+    var selector = ("#"+this.getId() );
+    var $eyedropper = $( '#' + this._toolbox.selectors.eyedropper );
 
-    })
-    $('#p_fill').click(function(e){
-      that.edit.fill();
-    });
+    if (enabled === true) {
 
-    //eyedropper tool
-    $('#p_eyedropper').click( function() {
-      if ( !$('#p_eyedropper').hasClass('tool-active') ) {
+      $eyedropper.click( function() {
+      
+      if ( !$eyedropper.hasClass('tool-active') ) {
         //interface changes
-        $("#p_eyedropper").toggleClass('tool');
-        $("#p_eyedropper").toggleClass('tool-active');
-        $(selector).toggleClass('stealing-colors');
-        that.painting(false);
-        
+        $eyedropper.toggleClass('tool');
+        $eyedropper.toggleClass('tool-active');
+        $(selector).toggleClass('color-grabber');
+
+        that.event.painting.call(that, false);
         $(selector).click( function(e) {
           
           var mouse = getMouse(e, that.canvas);
           var color = that.edit.getColorAt(mouse.x, mouse.y);
           //set the color to the one the eyedropper tool picked up.
           that.color(color);
-          $("#p_eyedropper").toggleClass('tool');
-          $("#p_eyedropper").toggleClass('tool-active');
+          $eyedropper.toggleClass('tool');
+          $eyedropper.toggleClass('tool-active');
           //unbind eyedropper click event and add painting event again
           $(selector).unbind("click");
-          $(selector).toggleClass('stealing-colors');
-          that.painting(true);
+          $(selector).toggleClass('color-grabber');
+          that.event.painting.call(that, true);
         });
       }
-    });
 
-    // Image Output
-    $('#p_generate').click(function(e){
-      that.imagesGenerated = that.imagesGenerated === undefined ? 0 : that.imagesGenerated+1;
-      var state = "<li><a target='_blank' href='" + that.make.image() + "' > State " + that.imagesGenerated +"</a></li>";
-      $('#p_generated-states').append(state);
-      
+     });
 
-    });
-
-
+    }
+    else $eyedropper.unbind("click");
+   
    };
-  this._removeEvents = function() {
-    // todo
+  this.event.makeImageState = function(enabled) {
+    var that = this;
+    var outputButton = "#" + this._toolbox.selectors.generate;
+    var outputList = "#" + this._toolbox.selectors.generatedlist;
+    var outputClear = outputList + "-clear";
+
+    if (enabled === true) {
+
+      $(outputButton).click( function(e) {
+        that.imagesGenerated = that.imagesGenerated === undefined ? 0 : that.imagesGenerated+1;
+        var state = "<li><a target='_blank' href='" + that.make.image() + "' > State " + that.imagesGenerated + "</a></li>";
+        $(outputList).append(state);
+      });
+
+      $(outputClear).click( function(e) {
+        if (window.confirm("This will delete your current stack of images, but not the image you are working on. Proceed?") ) $(outputList).html("");
+         
+      });
+
+    } else $(outputButton).unbind("click");
    };
-  this.end = function() {};
+  this.event.renew = function(enabled) {
+
+    var getData = function() {
+            var height = $('#pixeleditor-input-height').val();
+            var width = $('#pixeleditor-input-width').val();
+            var pixel = $('#pixeleditor-input-pixel').val();
+            return {"width":width, "height":height, "pixel": pixel};
+    };
+    var that = this;
+    var wrapper = "<div class='pixeleditor-modal'><h1>New Dimensions</h1></div>"
+    var inputWidth = '<label for="pixeleditor-input-width">Width:</label><input type="text" id="pixeleditor-input-width" name="pixeleditor-input-width" /><br />';
+    var inputHeight = '<label for="pixeleditor-input-height">Height:</label><input type="text" id="pixeleditor-input-height" name="pixeleditor-input-height" /><br />';
+    var inputPixels = '<label for="pixeleditor-input-pixel">Pixels</label><input type="text" id="pixeleditor-input-pixel" name="pixeleditor-input-pixel" /><br /><hr>';
+
+    var confirm = "<div class='tool confirm'>Okay</div><div class='tool cancel'>Nevermind</div><div class='clearfix'></div>"
+
+    if (enabled === true) {
+      var renew = "#" + this._toolbox.selectors.renew;
+
+      $(renew).click(function(){
+        if ($(".pixeleditor-modal").length === 0) {
+
+          $(renew).after(wrapper);
+          $(".pixeleditor-modal")
+            .append(inputWidth)
+            .append(inputHeight)
+            .append(inputPixels)
+            .append(confirm);
+
+            //show the current dimensions
+            $('#pixeleditor-input-height').val(that.edit.dimensions.height);
+            $('#pixeleditor-input-width').val(that.edit.dimensions.width);
+            $('#pixeleditor-input-pixel').val(that.edit.pixel);
+
+            $('.pixeleditor-modal .cancel').click(function(){
+              $(".pixeleditor-modal").remove();
+            });
+            $('.pixeleditor-modal .confirm').click(function(){
+              var height = $('#pixeleditor-input-height').val();
+              var width = $('#pixeleditor-input-width').val();
+              var pixel = $('#pixeleditor-input-pixel').val();
+              if (height.length === 0 ) { $('#pixeleditor-input-height').addClass('error').focus(); return; }
+              if (width.length === 0  ) { $('#pixeleditor-input-width').addClass('error').focus(); return; }
+              if (pixel.length === 0  ) { $('#pixeleditor-input-pixel').addClass('error').focus(); return; }
+              
+              var data = getData();
+              $(".pixeleditor-modal").remove();
+              that.start(data, null, true);
+              
+
+
+            })
+        }
+      });
+    }
+   };
+  this.events = function(enabled) {
+    var event = this.event;
+    // pass in a true or false to enabled or disable all events
+
+    event.painting.call(this, enabled);
+    event.colorpicker.call(this, enabled);
+    event.opacity.call(this, enabled);
+    event.fill.call(this, enabled);
+    event.eyedropper.call(this, enabled);
+    event.makeImageState.call(this, enabled);
+    event.renew.call(this, enabled);
+   };
   this.save = function() {};
-  this.reset = function() {};
+  this.reset = function(skipdialogue) {
+    if (skipdialogue || window.confirm("Are you sure? The current image you are working on will be lost.") ) this.edit.clear();
+
+   };
+  this.resize = function() {}
+  this.newImage = function() {
+    this.reset();
+  }
 
 
 // If parameters exist, the canvas is appended to another element upon instantiation.
   if (options !== undefined) {
-    this.addToDOM(options.parent, options);
+    this.renderCanvas(options.parent, options);
     this.options = options;
     }
   else {
-    this.addToDOM('body');
+    this.renderCanvas('body');
   }
 
 };
