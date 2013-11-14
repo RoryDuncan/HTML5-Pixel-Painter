@@ -1,4 +1,7 @@
 HTML5-Pixel-Painter
 ===================
 
-A embedable HTML5 canvas pixel graphics tool.
+A miniature pixel-editing web library using the the canvas.
+
+# Requires
+* jQuery (due to the jQuery colorpicker plugin being so seducing)

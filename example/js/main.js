@@ -4,7 +4,7 @@
 var PixelEditor = new PixelEditor({parent: 'div.container', id:"output"});
 
 //render will be called in the scope of CanvasPixelEditor._toolbox
-var render = function() {
+var toolboxView = function() {
 
 	var selector = this.selectors;
 	this.$toolbox.append('<h1>toolbox</h1>')
@@ -37,10 +37,7 @@ var render = function() {
 
 } 
 
-PixelEditor.start({width:10, height:10, pixel:40}, render);
+PixelEditor.start({width:10, height:10, pixel:40}, toolboxView);
 
-console.log(PixelEditor);
-
-//PixelEditor.setSize({width:800,height:800});
 
 
