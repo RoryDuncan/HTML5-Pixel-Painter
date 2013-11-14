@@ -1,0 +1,119 @@
+
+/*      ANNOTATED VERSION       */
+
+/*  Any suggested style are inside of the classes already.
+    The app shouldn't break if you delete them, but they act according to how the app was intended to be used.
+    otherwise,
+
+    STYLE AS YOU SEE FIT
+ */
+
+/* The toolbox where the user will use commands for the pixel editor */
+.toolbox {
+    float:left;
+}
+
+/* the canvas */
+.pixel-editor {
+    float:left;
+}
+
+/* The modal for changing dimensions (and any other functionality that you build in) */
+.toolbox .pixeleditor-modal {
+    position:fixed;
+}
+
+.toolbox .pixeleditor-modal hr {
+    clear: both;
+}
+
+.toolbox .pixeleditor-modal label {
+    vertical-align: bottom;
+    float:left;
+}
+
+.toolbox .pixeleditor-modal input {
+    float:right;
+}
+
+/* .tool is a class used for buttons or itnerface options that DO something. */
+.toolbox .pixeleditor-modal .tool {
+    margin: 0 0;
+    width:45%;
+}
+
+/* Floating for side-by-side buttons instead of stacked blocks */
+.toolbox .pixeleditor-modal .tool:nth-of-type(1) {
+    float: right;
+}
+.toolbox .pixeleditor-modal .tool:nth-of-type(2) {
+    float: left;
+}
+
+/* The appearance of items when the user didn't enter information */
+.toolbox .pixeleditor-modal .error {
+    border:  2px solid #f66;
+}
+
+/* Columns within the toolbox. */
+.toolbox .column {
+    vertical-align: top;
+    /* If serving to ie you may want to use float, instead of dispay: inline-block; or fix for ie */
+    display: inline-block;
+}
+
+/* the main heading(s) of the toolbox */
+.toolbox h1 {}
+
+/* Subheadings, ya know. */
+.toolbox .column h1 {}
+
+.toolbox input {}
+
+/* Any catch-alls that might be wanted to be implemented. ie, specific margins/paddings */
+.toolbox div {}
+
+/* The visual aspect of buttons that the user will be using. */
+.toolbox  .tool  {}
+
+/* Any visual changes when hovered would obviously go here */
+.toolbox .tool:hover {
+    cursor: pointer;
+}
+
+/* .tool-active is for when a tool has been selected and is in 'use'. */
+.toolbox  .tool-active {}
+
+/* The default rendering places outputted images in an ordered-list. This would be it's styling. */
+.toolbox ol {}
+.toolbox ol li a {}
+
+/* This is added to the canvas when the colorgrabber / eyedropper tool is used. */
+.color-grabber {
+    cursor: crosshair;
+}
+
+/* If you don't want the toolbox to have the text-cursor when hovering, remove this. */
+.toolbox:hover {
+    cursor: default;
+}
+
+/* selectors for jQuery colorpicker plugin. */
+/*  I've fine-tuned these to work, I wouldn't touch them unless you know what you're doing. */
+#colorselector {
+    margin: 0 auto;
+    padding: 0px 0px 0px 0px;
+    border-radius: 3px;
+    width: 30px;
+    height: 30px;
+    background:48% 48% url('../images/select2.png') no-repeat #f00;
+}
+
+#colorselector:hover {
+    cursor: pointer;
+}
+
+/* Specific positioning can be added to the colorpicking box with left: xx%;, etc  */
+#colorpickerholder {
+    position: fixed;
+}
